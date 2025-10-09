@@ -1,0 +1,299 @@
+Q: How are skin adnexal tumors classified?
+A: Skin adnexal tumors are usually classified according to the skin appendage origin.
+
+Q: What is the importance of follow-up care after skin cancer treatment?
+A: Follow-up care helps monitor for recurrence and manage any long-term effects of treatment.
+
+Q: What is the treatment schedule for superficial non-melanoma skin cancers using PDT?
+A: Patients are generally evaluated 7�10 days after PDT at which point they may be treated a second time.
+
+Q: What is the range of frequencies used in high-frequency ultrasound for skin cancer imaging?
+A: 22 up to 100 MHz
+
+Q: What is included in pertinent information for the biopsy requisition slip?
+A: Identifying information/demographics lesion details biopsy technique diagnosis requests for nonroutine processing and additional helpful details.
+
+Q: What does the PTCH1 gene do?
+A: PTCH1 is a tumor suppressor gene.
+
+Q: What are the different types of skin cancer surgery?
+A: Surgical options include excision Mohs surgery and reconstructive surgery.
+
+Q: What mechanisms suggest the usefulness of organosulfur compounds found in garlic and onions for skin cancer?
+A: The specific mechanisms that have been identified suggest likely usefulness for skin cancer due to their anticancer effects, as identified in animal studies.
+
+Q: Is routine imaging recommended for stage 0
+A: I or IIA melanoma? Routine imaging is not recommended for patients with stage 0 I or IIA melanoma.
+
+Q: What is a primary advantage of using confocal microscopy in skin cancer?
+A: It allows for real-time visualization of tissue
+
+Q: What is the significance of "clefting" in BCC on RCM?
+A: Clefting refers to dark areas surrounding tumor aggregates which correlate with mucin depots seen in histology.
+
+Q: What is the name of a method used to analyze dermoscopic images?
+A: Pattern analysis
+
+Q: What is overall survival?
+A: The percentage of people in a study who are alive after a certain time
+
+Q: What is a common form of toxicity with imiquimod in cats?
+A: Local erythema
+
+Q: Are there any genetic markers that can help with melanoma prognosis?
+A: Yes copy number variations of genes like CCND1/Cyclin D1 mutations in genes like BRAF NRAS and KIT and gene expression profiles can influence melanoma prognosis and treatment decisions.
+
+Q: What is Nicotinamide?
+A: Nicotinamide is an amide form of vitamin B3 that contributes to repair of photodamaged DNA.
+
+Q: What are some imaging modalities used for skin cancer management?
+A: Imaging modalities include computed tomography (CT) magnetic resonance imaging (MRI) ultrasound (US) and positron-emission tomography/CT (PET/CT).
+
+Q: How does normal skin appear in ultrasound?
+A: The dermis is markedly echogenic and sharply demarcated from hypoechogenic subcutaneous fat.
+
+Q: What should physicians do given the changing demographics and disparate mortality of skin cancer?
+A: Physicians must become familiar with skin cancer in skin of color to better educate these patients on risk factors and early detection.
+
+Q: What does the acronym 'SPD' stand for in irRC?
+A: Sum of the product of the perpendicular diameters
+
+Q: What can be done to reduce the risk of muscle spasm during HPI therapy?
+A: To reduce the risk and severity of muscle spasm during HPI therapy patients should be advised to keep hydrated and limit physical activity.
+
+Q: What is array CGH?
+A: A technique to analyze chromosomal gains and losses that may be used to study difficult to classify melanocytic lesions
+
+Q: What should always be considered even in the absence of other indications of malignancy?
+A: The finding of B- or T-cell clonality should always be carefully considered.
+
+Q: How should response to PDT be confirmed?
+A: Response to PDT should be confirmed by histopathology.
+
+Q: What is the main focus of Chapter 4 in the provided text?
+A: Molecular Pathology of Melanocytic Skin Cancer
+
+Q: What is the most common type of cutaneous T-cell lymphomas?
+A: Mycosis fungoides (MF).
+
+Q: What is the role of sentinel lymph node biopsy in skin cancer?
+A: Sentinel lymph node biopsy is approved for staging cutaneous melanoma (especially >1mm thick or with high-risk features) and may be used for isolated local recurrences. It's not standard for other skin cancers but considered in high-risk cases.
+
+Q: What are some typical questions a radiation oncologist might ask during the initial interview?
+A: A radiation oncologist will typically inquire about the histologic diagnosis staging previous treatments planned treatments goals of radiation prior radiation history other cancer diagnoses overall medical condition comorbidities patient expectations and conditions exacerbated by radiation.
+
+Q: What is the significance of documenting pre-existing defects with photography?
+A: Documenting pre-existing defects with photography is important as many patients do not appreciate asymmetry or recall defects until after their surgery, potentially leading to misunderstandings and dissatisfaction.
+
+Q: What does 'C' stand for in the ABCD rule?
+A: In the context provided, 'C' stands for "Clark's Level" or "Depth of Invasion", which refers to the thickness of the melanoma and helps determine the level of aggressiveness.
+
+Q: What is one of the difficulties in classifying cutaneous sweat gland tumors?
+A: The pathogenesis and exact origin of many lesions is still under investigation
+
+Q: What is generally adequate for correct classification of skin adnexal tumors?
+A: Pathological routine examination is generally adequate for correct classification.
+
+Q: What is the title of a review that discusses green tea in dermatology?
+A: The title of the review discussing green tea in dermatology is "Green tea in dermatology".
+
+Q: What is Polypodium leucotomos extract derived from?
+A: Polypodium leucotomos extract is derived from the rhizomes of a fern native to Central America and South America.
+
+Q: What has shown to increase the treatment duration of vismodegib?
+A: Treatment breaks has shown to increase the treatment duration of vismodegib.
+
+Q: What is the purpose of using a glass plate in contact dermoscopy?
+A: To flatten the skin surface
+
+Q: What are the cure rates for SCC with topical imiquimod?
+A: The cure rate for SCC with topical imiquimod ranges from 57% to 80%.
+
+Q: What is gene sequencing?
+A: Determining the order of nucleotide bases in DNA
+
+Q: What is the main benefit of MMS?
+A: It has a high cure rate and is cost effective
+
+Q: How are tissue specimens processed in Mohs surgery?
+A: Frozen sections are sectioned horizontally
+
+Q: What are the main steps in each stage of Mohs surgery?
+A: Collection of tumour tissue processing of the tissue and orientation for histologic sectioning and histologic reading of the sections
+
+Q: What is the ABCD criterion for identifying suspicious skin lesions?
+A: The ABCD criterion stands for Asymmetry Border Color and Dimension.
+
+Q: What are the most common skin cancers in dogs?
+A: The most common are mast cell tumor lipoma sebaceous gland tumor histiocytoma squamous cell carcinoma melanoma fibrosarcoma and basal cell tumor.
+
+Q: What is the response of tumors treated with intralesional interferon injections?
+A: Tumors treated with intralesional interferon may have a response of slight erythema with induration little to no erythema with slight induration or slight erythema with little induration.
+
+Q: What is the maximum recommended dose of lidocaine with epinephrine?
+A: This depends on the concentration and patient factors but caution is advised and references should be consulted
+
+Q: How is Mycosis Fungoides classified?
+A: According to the type of skin lesions (patches plaques and tumors) the presence or absence of large-cell transformation and/or extracutaneous involvement.
+
+Q: What does MAL stand for?
+A: Methyl aminolevulinic acid
+
+Q: What factors contribute to the development of melanoma?
+A: Risk factors for development of melanoma comprise UV radiation (sun exposure, tanning beds), sunburn, multiple or dysplastic naevi and medical history of melanoma.
+
+Q: What is the first step in CGH methodology?
+A: Labeling tumor DNA and reference DNA with different fluorochromes
+
+Q: What is a major risk associated with skin cancer in transplant recipients?
+A: Increased risk of squamous cell carcinoma
+
+Q: What is the main focus of OCT research in dermatology?
+A: The main focus has been on non-melanoma skin cancer (NMSC) particularly actinic keratosis (AK) and basal cell carcinoma (BCC).
+
+Q: What is a common chromosomal loss in non-CSD melanomas?
+A: Losses in 9p 10 and 21q
+
+Q: How does UV radiation cause skin cancer?
+A: It damages DNA causing mutations in genes like p53 and PTCH1.
+
+Q: What is a potential effect of using a 45� angle in a transposition flap?
+A: An increase in the length of around 50%
+
+Q: Where do the majority of Basal Cell Carcinomas (BCC) usually occur?
+A: The majority of Basal Cell Carcinomas (BCC) usually occur on sun-exposed areas such as the face, neck, and hands.
+
+Q: What is the function of the SMO protein in relation to skin cancer?
+A: Activating mutations in SMO are associated with basal cell carcinoma.
+
+Q: What is the source for information on Survival of patients with advanced metastatic melanoma: the impact of MAP kinase pathway inhibition and immune checkpoint inhibition - Update 2019?
+A: Information on Survival of patients with advanced metastatic melanoma: the impact of MAP kinase pathway inhibition and immune checkpoint inhibition - Update 2019 can be found in the article "Survival of patients with advanced metastatic melanoma: the impact of MAP kinase pathway inhibition and immune checkpoint inhibition - Update 2019" by Ugurel S, Röhmel J, Ascierto PA, et al.
+
+Q: What does 'NMSC' stand for in the context of Mohs surgery?
+A: Non-melanoma skin cancer
+
+Q: Is S-100 a specific marker?
+A: No it can be expressed in other cells such as fibroblasts
+
+Q: What is the integumentary system?
+A: The integumentary system consists of the skin and its appendages (glands hair nails teeth).
+
+Q: What is important to include when speaking with your radiologist?
+A: It is important to include the patient's primary malignancy and location anatomical structures of interest and the information needed for evaluation.
+
+Q: What are some non-surgical treatment options for skin cancer?
+A: These include topical therapies photodynamic therapy and radiation therapy.
+
+Q: What are the main cytological findings of basal cell carcinoma (BCC)?
+A: BCC smears typically show cohesive sheets of small hyperchromatic epithelial cells with scanty cytoplasm and indistinct cell borders sometimes with peripheral palisading.
+
+Q: What is the typical treatment for lentigo maligna?
+A: Topical imiquimod
+
+Q: What is the EORTC classification?
+A: The EORTC classification published in 1997 was the first consensus classification for primary cutaneous lymphomas.
+
+Q: What is the effect of UVB irradiation on keratinocytes?
+A: It induces expansion of intraepithelial tumor cells
+
+Q: How is awareness about skin cancer being increased in Australia?
+A: In Australia, national campaigns promoting physical and chemical sun protection support education from early childhood about acute and chronic sun damage and skin cancer. These campaigns aim to increase knowledge and awareness about the risk of developing melanoma.
+
+Q: What local response to intralesional interferon indicates 100% tumor resolution?
+A: Local response 1 slight erythema of the tumor with little induration indicates 100% tumor resolution.
+
+Q: What is Cowden's syndrome?
+A: A genetic disorder associated with multiple hamartomas
+
+Q: How effective is curettage alone?
+A: Curettage without electrodessication of basal cell carcinomas has been reported to be as effective as electrodessication and curettage.
+
+Q: What is the role of genetic testing in skin cancer?
+A: Genetic testing can help identify individuals with a higher risk of developing skin cancer.
+
+Q: What does the acronym 'CGH' stand for?
+A: Comparative genomic hybridization
+
+Q: What does Carney's syndrome include?
+A: Myxomas spotty skin pigmentation endocrine overactivity and schwannomas
+
+Q: What are the major risk factors for NMSC?
+A: Major risk factors for NMSC are chronic sun-damaged skin and immunosuppression.
+
+Q: When is fine needle aspiration (FNA) cytology used?
+A: In nodular lesions.
+
+Q: What is the most costly way to treat skin cancer in the United States?
+A: The most costly way to treat skin cancer in the United States is by radiation oncology.
+
+Q: What is used to reduce the reflection of light in dermoscopy?
+A: An immersion liquid such as oil alcohol or ultrasonography gel.
+
+Q: How is imiquimod applied?
+A: Imiquimod cream should be applied to the lesion including a 1-cm margin five times per week.
+
+Q: What are some well-known risk factors for melanoma?
+A: Well-known risk factors for melanoma include ultraviolet radiation (sun exposure, tanning beds), sunburn, multiple or dysplastic naevi, and a medical history of melanoma. Inherited genetic mutations are rare but possible, especially if one person has multiple melanomas, or several family members suffer from melanoma and/or associated tumor entities such as FAMMM (familial atypical multiple mole melanoma) syndrome.
+
+Q: What is the significance of p53 in cSCC?
+A: Mutations in the p53 gene are common in cSCC.
+
+Q: What is the recommended temperature for cryoablation of malignant tumors?
+A: -50 to -60�C
+
+Q: What percentage of skin cancers are nonmelanoma?
+A: Approximately 88% of skin cancers are nonmelanoma.
+
+Q: What type of cosmetic results are seen with curettage alone compared to curettage and electrodesiccation?
+A: Cosmetic results were considered better than when curettage and electrodesiccation were used as the latter technique has been shown to increase the chance of hypertrophic scarring and hypopigmentation in some locations.
+
+Q: What is the role of immunohistochemistry (IHC) in diagnosing skin tumors?
+A: IHC differentiates melanomas from benign tumors using markers like S100 HMB45 Leu 7 and NK1-beteb. p16 differentiates desmoplastic nevus (positive) from desmoplastic melanoma (negative).
+
+Q: When is radiation therapy considered for melanoma?
+A: Radiation is seldom used for primary melanoma but is considered for close or positive margins after excision desmoplastic melanoma and in some cases of lentigo maligna.
+
+Q: What are some signs of melanoma?
+A: Signs include changes in size shape or color of a mole irregular borders or a mole that is different from others.
+
+Q: What is a common feature of the cells in atypical dermal melanocytosis?
+A: Densely crowded cytoplasm filled with coarse melanin granules
+
+Q: What is the statistical analysis based on in FIDE system?
+A: A hierarchical Bayesian model-based data analysis approach.
+
+Q: How does intermittent sun exposure relate to skin cancer risk?
+A: Intermittent exposure to UV radiation particularly with a history of sunburn increases the risk of melanoma.
+
+Q: What is the purpose of a pressure dressing after surgery?
+A: A pressure dressing is used to provide pressure limit post-operative bleeding and help support and stabilize the wound.
+
+Q: What is the most frequent CTCL?
+A: Mycosis fungoides is the most frequent CTCL.
+
+Q: What role does early detection play in identifying and treating skin cancers?
+A: Early detection is the most important factor in identifying and treating skin cancers. Many organizations recommend regular skin self-examination. People who have already had skin cancer or who are known to be at high risk for developing skin cancer should be evaluated regularly by a health care clinician. Information on how to perform skin self-examination can be found through the American Academy of Dermatology website.
+
+Q: What does the acronym 'PDT' stand for?
+A: Photodynamic therapy
+
+Q: What is the goal of total skin electron irradiation (TSEI)?
+A: The goal is to provide sufficient dose to the skin so that a durable remission is obtained while ensuring patient comfort and minimizing toxicity.
+
+Q: What should happen before the surgeon marks the skin?
+A: The patient should point to the location of the skin cancer without direction from the physician.
+
+Q: Where do squamous cell carcinomas originate?
+A: cSCCs originate from keratinocytes.
+
+Q: What is AK?
+A: AK is Actinic keratosis.
+
+Q: What is a key advantage of Mohs surgery?
+A: MMS allows for histologic studies of 100% of the tumor margins.
+
+Q: What is the most reliable origin of CATs?
+A: The origin from pluripotent stem cells seems to be the most reliable.
+
+Q: What does the term "perineural invasion" refer to?
+A: The spread of cancer cells around nerves
