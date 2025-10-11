@@ -10,3 +10,4 @@ mutagen==1.47.0
 fastparquet==2024.11.0
 transformers==4.57.0
 datasets==4.2.0
+bs4==0.0.2
