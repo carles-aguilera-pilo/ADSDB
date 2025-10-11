@@ -1,3 +1,5 @@
+!.gitignore
+
+.*
 minio/
-venv/
-output/
+output_audio/
