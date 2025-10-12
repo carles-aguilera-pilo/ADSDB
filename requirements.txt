@@ -12,3 +12,4 @@ transformers==4.57.0
 datasets==4.2.0
 bs4==0.0.2
 dotenv==0.9.9
+matplotlib==3.10.7
