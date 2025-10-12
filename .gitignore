@@ -3,3 +3,4 @@
 .*
 minio/
 output_audio/
+venv/
