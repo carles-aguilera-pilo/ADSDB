@@ -2,4 +2,4 @@
 
 .*
 minio/
-output_audio/
+output*

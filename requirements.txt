@@ -1,7 +1,6 @@
 boto3==1.40.49
 botocore==1.40.49
 pandas==2.3.3
-<<<<<<< HEAD
 ipykernel==6.30.1
 tqdm==4.67.1
 fsspec==2025.9.0
@@ -12,6 +11,5 @@ fastparquet==2024.11.0
 transformers==4.57.0
 datasets==4.2.0
 bs4==0.0.2
-=======
 dotenv==0.9.9
->>>>>>> de56268 (change formatted_zone_images to use env file)
+pillow==11.3.0
