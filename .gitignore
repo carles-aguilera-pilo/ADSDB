@@ -2,6 +2,6 @@
 
 .*
 minio/
-output/
-output_audio/
+output*
 venv/
+
