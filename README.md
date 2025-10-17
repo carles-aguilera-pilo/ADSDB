@@ -14,3 +14,20 @@ To deploy MinIO with Docker Compose it is needed to:
 ```docker compose up```
 
 Once this is done, the GUI can be accessed via [http://localhost:9001](http://localhost:9001)
+
+## Data Collecting
+For this project, we have designed an script that automatically collects data for further uploading and processing. This program is documented [here](./notebooks/landing_zone/data-collection.ipynb). In particular, the script will create the following directory structure representing 3 different datasources:
+- output/dataset1 
+- output/dataset2
+- output/dataset3
+
+It is needed to have the data as presented before starting the data pipeline. The first step of the pipeline consists on traversing all the files and uploading them to the temporal landing zone (see the [notebook](./notebooks/landing_zone/temporal_zone.ipynb) for more information).
+
+## Run Data pipeline
+After setting up MinIO and having collected all the data for our pipeline, run the data pipeline to upload it to MinIO and process it for further exploitation. The scripts involved in the process, which are based on the notebooks' code, can be found in [src](./src/) folder.
+
+The data pipeline process can be run as a docker container:
+```bash
+docker run -v ./output:/usr/local/app/output --env-file=<path to your env file> <repository>/<image> 
+```
+
