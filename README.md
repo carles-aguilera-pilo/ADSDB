@@ -28,6 +28,6 @@ After setting up MinIO and having collected all the data for our pipeline, run t
 
 The data pipeline process can be run as a docker container:
 ```bash
-docker run -v ./output:/usr/local/app/output --env-file=<path to your env file> <repository>/<image> 
+docker run -v ./output:/usr/local/app/output --env-file=.env ghcr.io/carles-aguilera-pilo/adsdb:latest
 ```
 
