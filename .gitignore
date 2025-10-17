@@ -1,0 +1,8 @@
+!.gitignore
+
+.*
+minio/
+output*
+venv/
+*.onnx*
+
