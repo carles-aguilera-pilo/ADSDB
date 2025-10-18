@@ -1,0 +1,76 @@
+# %% [markdown]
+# # Formatted Zone (Text)
+# 
+# This notebook contains the scripts needed for the extraction of text from the persistent landing zone, its processing and storage to the formatted zone. The formatted zone is represented by another bucket and aims to replicate the same folder structure as the persistent landing zone. The difference is that the data format in the formatted zone has been homogenized, as one of the steps of our data pipeline. 
+# 
+# This notebook focuses only on text data (the equivalent notebooks for the other types of data can be found in the same folder). Particularly, the following scripts are responsible of the following tasks:
+# 1. Extraction of texts from persistent landing zone.
+# 2. Homogenization of data. In this case, that will consist on ensuring that all texts are converted to .txt files.
+# 3. Formatted data storage into the formatted zone.
+# 
+# First, we will connect to MinIO and prepare the new bucket:
+
+# %%
+import boto3
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+access_key_id = os.getenv("ACCESS_KEY_ID")
+secret_access_key = os.getenv("SECRET_ACCESS_KEY")
+minio_url = "http://" + os.getenv("S3_API_ENDPOINT")
+
+
+minio_client = boto3.client(
+    "s3",
+    aws_access_key_id=access_key_id,
+    aws_secret_access_key=secret_access_key,
+    endpoint_url=minio_url
+)
+
+new_bucket = "formatted-zone"
+try:
+    minio_client.create_bucket(Bucket=new_bucket)
+except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
+    print(f"Bucket '{new_bucket}' already exists")
+
+# %% [markdown]
+# Now, for each text in the persistent landing zone the following script will donwload it, convert it to txt format and store it in the formatted zone. Notice that the old versions are kept in the persistent landing zone so the raw data is still available if it is needed.
+
+# %%
+import botocore.exceptions
+import io
+
+bucket_origin = "persistent-landing"
+bucket_destination = "formatted-zone"
+path_prefix = "text/"
+
+paginator = minio_client.get_paginator("list_objects_v2") # We use paginators because the list_objects method response is limitted to a maximum of 1,000 objects 
+
+for page in paginator.paginate(Bucket=bucket_origin, Prefix=path_prefix):
+    for obj in page["Contents"]:
+        key = obj["Key"]
+        split_filename = os.path.splitext(key.split("/")[1])
+        filename = split_filename[0]
+        format = split_filename[1].lower()
+        
+        try:
+            response = minio_client.get_object(Bucket=bucket_origin, Key=key)
+
+            # Text conversion to .txt. Here, the only transformation is the extension 
+            text_data = response["Body"].read()
+            buffer = io.BytesIO(text_data)
+
+            # Upload text to formatted zone
+            new_key = path_prefix + filename + ".txt"
+            minio_client.upload_fileobj(Fileobj=buffer, Bucket=bucket_destination, Key=new_key)
+            minio_client.head_object(Bucket=bucket_destination, Key=new_key) # Checks if the file was uploaded successfully and throws an exception otherwise.
+        except botocore.exceptions.ClientError as e:
+            print(f"[ERROR]: An error occurred while moving {filename} between zones: {e}")
+        except Exception as e:
+            print(f"[ERROR]: An error occurred while manipulating {filename}: {e}")
+
+# %% [markdown]
+# After this, all texts should have been successfully uploaded to the formatted zone.
+
+
