@@ -7,4 +7,5 @@ output*
 venv/
 *.onnx*
 output/
+.env
 
