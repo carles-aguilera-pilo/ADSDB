@@ -21,6 +21,7 @@ new_bucket = "persistent-landing"
 class PersistentZone(StrategyLandingZone):
     
     def executar(self):
+        print("Executing Persistent Zone...")
         minio_client = Connection()
         try:
             minio_client.create_bucket(Bucket=new_bucket)
@@ -68,8 +69,3 @@ class PersistentZone(StrategyLandingZone):
                     Key=new_key
                 )
         print("Files have been organized in the persistent landing bucket.")
-        for page in paginator.paginate(Bucket=landing_zone):
-            for obj in page.get("Contents", []):
-                key = obj.get("Key", "")
-                minio_client.delete_object(Bucket=landing_zone, Key=key)
-        print("Temporary landing files have been removed.")

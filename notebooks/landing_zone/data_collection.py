@@ -36,14 +36,14 @@ class DataCollection(StrategyLandingZone):
             image.save(save_path)
         topics = ["skin_cancer", "melanoma", "basal_cell_carcinoma", "squamous_cell_carcinoma", "actinic_keratosis"]
         self.wikipedia_scrapper(topics, OUTPUT_DIR)
-        #df = pd.read_json("hf://datasets/Moaaz55/skin_cancer_questions_answers/dataset.json", lines=True)
-        #df = df.sample(n=100, random_state=42)
-        #df = df.apply(lambda row: f"A: {row['Answer']}\n", axis=1)
-        #voice = PiperVoice.load(os.path.join(BASE_DIR, "en_US-lessac-medium.onnx"))
-        #for i, text in enumerate(df):
-        #    text = text.replace("A: ", "").strip()
-        #    with wave.open(os.path.join(OUTPUT_DIR, f"dataset3/answer_{i}.wav"), "wb") as wav_file:
-        #        voice.synthesize_wav(text, wav_file)
+        df = pd.read_json("hf://datasets/Moaaz55/skin_cancer_questions_answers/dataset.json", lines=True)
+        df = df.sample(n=100, random_state=42)
+        df = df.apply(lambda row: f"A: {row['Answer']}\n", axis=1)
+        voice = PiperVoice.load(os.path.join(BASE_DIR, "en_US-lessac-medium.onnx"))
+        for i, text in enumerate(df):
+            text = text.replace("A: ", "").strip()
+            with wave.open(os.path.join(OUTPUT_DIR, f"dataset3/answer_{i}.wav"), "wb") as wav_file:
+                voice.synthesize_wav(text, wav_file)
                 
 
     def wikipedia_scrapper(self, topics, output_dir):

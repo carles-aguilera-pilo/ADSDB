@@ -15,7 +15,9 @@ from notebooks.landing_zone.aStrategyLanding import StrategyLandingZone
 class TemporalZone(StrategyLandingZone):
     
     def executar(self):
+        print("Executing Temporal Zone...")
         minio_client = Connection()
+        print(minio_client)
         new_bucket = "landing-zone"
         try:
             minio_client.create_bucket(Bucket=new_bucket)
