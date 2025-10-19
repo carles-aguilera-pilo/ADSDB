@@ -12,5 +12,13 @@ services:
       MINIO_ROOT_PASSWORD: ${SECRET_ACCESS_KEY}
     volumes:
       - minio-data:/data
+  chromadb:
+    image: ghcr.io/chroma-core/chroma # Official ChromaDB image
+    ports:
+      - "8000:8000" # Expose ChromaDB API on port 8000
+    volumes:
+      - chroma-data:/chroma # Persist ChromaDB data
+
 volumes:
+  chroma-data:
   minio-data:
