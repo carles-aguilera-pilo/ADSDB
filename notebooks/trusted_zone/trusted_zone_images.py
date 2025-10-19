@@ -10,7 +10,16 @@ import pandas as pd
 from PIL import Image, ImageEnhance, ImageFilter
 import io
 from tqdm import tqdm
-import connection
+import sys
+from pathlib import Path
+
+# Añadir el directorio padre al path para imports
+current_dir = Path(__file__).parent
+parent_dir = current_dir.parent
+sys.path.append(str(parent_dir))
+
+from connection import Connection
+from notebooks.trusted_zone.aStrategyTrusted import StrategyTrustedZone
 
 new_bucket = "trusted-zone"
 bucket_origen = "formatted-zone"

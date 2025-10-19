@@ -1,8 +1,11 @@
-from aStrategy import StrategyFormattedZone
+from notebooks.formatted_zone.aStrategyFormatted import StrategyFormattedZone
 
 class FormatedZone:
     
     strategy: StrategyFormattedZone = None
+    
+    def __init__(self):
+        self.strategy = None
     
     def __init__(self, strategy: StrategyFormattedZone):
         self.strategy = strategy

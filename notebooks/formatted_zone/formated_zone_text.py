@@ -4,7 +4,16 @@ import os
 from dotenv import load_dotenv
 import botocore.exceptions
 import io
-import connection
+import sys
+from pathlib import Path
+
+# Añadir el directorio padre al path para imports
+current_dir = Path(__file__).parent
+parent_dir = current_dir.parent
+sys.path.append(str(parent_dir))
+
+from connection import Connection
+from notebooks.formatted_zone.aStrategyFormatted import StrategyFormattedZone
 
 bucket_origin = "persistent-landing"
 bucket_destination = "formatted-zone"
@@ -16,7 +25,7 @@ class FormatedZoneText(StrategyFormattedZone):
     
     def executar(self):
 
-        minio_client = connection.Connection()
+        minio_client = Connection()
         try:
             minio_client.create_bucket(Bucket=new_bucket)
         except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):

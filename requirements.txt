@@ -22,8 +22,6 @@ pydub==0.25.1
 soundfile==0.12.1
 audioread==3.0.1
 ffmpeg-python==0.2.0
-matplotlib==3.9.2
 numpy==1.26.4
 scipy==1.13.1
-pandas==2.2.3
 opencv-python==4.10.0.84

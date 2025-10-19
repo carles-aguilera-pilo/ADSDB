@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
-from aStrategyTrusted import StrategyTrustedZone
+from notebooks.trusted_zone.aStrategyTrusted import StrategyTrustedZone
 
 class TrustedZone:
     strategy: StrategyTrustedZone = None
+    
+    def __init__(self):
+        self.strategy = None
     
     def __init__(self, strategy: StrategyTrustedZone):
         self.strategy = strategy

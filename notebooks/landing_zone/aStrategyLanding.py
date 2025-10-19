@@ -1,4 +1,4 @@
-import abc from ABC, abstractmethod
+from abc import ABC, abstractmethod
 
 class StrategyLandingZone(ABC):
     @abstractmethod

@@ -1,34 +1,28 @@
 
-
-import sys
-import os
-
-# Añadir las rutas de los módulos al path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'notebooks', 'landing_zone'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'notebooks', 'formatted_zone'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'notebooks', 'trusted_zone'))
-
 try:
-    # Importar las clases principales
-    from Alanding import LandingZone
-    from Aformated import FormatedZone
-    from Atrusted import TrustedZone
-    
-    # Importar las estrategias
-    from data_collection import DataCollection
-    from temporal_zone import TemporalZone
-    from persistent_zone import PersistentZone
-    from formated_zone_audio import FormatedZoneAudio
-    from formated_zone_images import FormatedZoneImages
-    from formated_zone_text import FormatedZoneText
-    from trusted_zone_audio import TrustedZoneAudio
-    from trusted_zone_images import TrustedZoneImages
-    from trusted_zone_text import TrustedZoneText
+    from notebooks.landing_zone.Alanding import LandingZone
+    from notebooks.formatted_zone.Aformated import FormatedZone
+    from notebooks.trusted_zone.Atrusted import TrustedZone
+    from notebooks.landing_zone.data_collection import DataCollection
+
+
+    from notebooks.landing_zone.temporal_zone import TemporalZone
+    from notebooks.landing_zone.persistent_zone import PersistentZone
+
+
+    from notebooks.formatted_zone.formated_zone_audio import FormatedZoneAudio
+    from notebooks.formatted_zone.formated_zone_images import FormatedZoneImages
+    from notebooks.formatted_zone.formated_zone_text import FormatedZoneText
+
+
+    from notebooks.trusted_zone.trusted_zone_audio import TrustedZoneAudio
+    from notebooks.trusted_zone.trusted_zone_images import TrustedZoneImages
+    from notebooks.trusted_zone.trusted_zone_text import TrustedZoneText
     
     print("=== INICIANDO PIPELINE DE PROCESAMIENTO DE DATOS ===")
     
-    # EJECUTAR LANDING ZONE
-    print("\n1. Ejecutando Landing Zone...")
+    # EXECUTE THE LANDING ZONE
+    print("\n1. Executing Landing Zone...")
     landing_zone = LandingZone(DataCollection())
     landing_zone.executar()
     
@@ -38,8 +32,8 @@ try:
     landing_zone.set_strategy(PersistentZone())
     landing_zone.executar()
     
-    # EJECUTAR FORMATTED ZONE
-    print("\n2. Ejecutando Formatted Zone...")
+    # EXECUTE THE FORMATTED ZONE
+    print("\n2. Executing Formatted Zone...")
     formated_zone = FormatedZone(FormatedZoneAudio())
     formated_zone.executar()
     
@@ -49,8 +43,8 @@ try:
     formated_zone.set_strategy(FormatedZoneText())
     formated_zone.executar()
     
-    # EJECUTAR TRUSTED ZONE
-    print("\n3. Ejecutando Trusted Zone...")
+    # EXECUTE THE TRUSTED ZONE
+    print("\n3. Executing Trusted Zone...")
     trusted_zone = TrustedZone(TrustedZoneAudio())
     trusted_zone.executar()
     
@@ -60,12 +54,12 @@ try:
     trusted_zone.set_strategy(TrustedZoneText())
     trusted_zone.executar()
     
-    print("\n=== PIPELINE COMPLETADO EXITOSAMENTE ===")
+    print("\n=== PIPELINE COMPLETED SUCCESSFULLY ===")
     
 except ImportError as e:
-    print(f"Error de importación: {e}")
-    print("Asegúrate de que todos los módulos estén disponibles")
+    print(f"Import error: {e}")
+    print("Make sure all modules are available")
 except Exception as e:
-    print(f"Error durante la ejecución: {e}")
+    print(f"Error during execution: {e}")
     import traceback
     traceback.print_exc()
