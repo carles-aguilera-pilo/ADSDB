@@ -1,9 +1,10 @@
 !.gitignore
-!.github.workflows/
 
 .*
 minio/
 output*
 venv/
 *.onnx*
-
+output/
+.env
+.DS_Store
