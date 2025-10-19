@@ -39,6 +39,11 @@ class TrustedZoneAudio(StrategyTrustedZone):
     
     def executar(self):
         
+        global bucket_origen
+        global prefix_origen
+        global bucket_desti
+        global freq_final
+        global new_bucket
         minio_client = Connection()
         try:
             minio_client.create_bucket(Bucket=new_bucket)
@@ -113,7 +118,7 @@ class TrustedZoneAudio(StrategyTrustedZone):
         self.make_plot_analysis(df2)
         
         
-    def detectar_filtro(centroid, rolloff, ratio):
+    def detectar_filtro(self, centroid, rolloff, ratio):
             if centroid < 1500 and rolloff < 3000 and ratio < 0.5:
                 return "Low-pass filter"
             elif centroid > 4000 and rolloff > 6000 and ratio > 1.5:
@@ -123,7 +128,7 @@ class TrustedZoneAudio(StrategyTrustedZone):
             else:
                 return "No filter"
             
-    def analyze_audio_file(audio_bytes):
+    def analyze_audio_file(self, audio_bytes):
             audio = AudioSegment.from_file(BytesIO(audio_bytes))
             duration = len(audio) / 1000        # DURATION IN SECONDS.
             frame_rate = audio.frame_rate       # SAMPLING FREQUENCY.
@@ -175,7 +180,7 @@ class TrustedZoneAudio(StrategyTrustedZone):
             }
             
     
-    def make_plot_analysis(df):
+    def make_plot_analysis(self, df):
         primeros_dos = df.sample(n=2, random_state=42)
         fig, axes = plt.subplots(2, 2, figsize=(5, 3))
         fig.suptitle('Comparación de los dos primeros archivos de audio', fontsize=16)

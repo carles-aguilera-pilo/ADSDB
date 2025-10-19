@@ -93,21 +93,21 @@ class TrustedZoneText(StrategyTrustedZone):
                 filename = key.split("/")[-1]
                 response = minio_client.get_object(Bucket="trusted-zone", Key=key)
                 text = response["Body"].read().decode("utf-8", errors="ignore")
-                analysis_2.append(analisi_text(text))
+                analysis_2.append(self.analisi_text(text))
                 
         df_2 = pd.DataFrame(analysis_2)
         df_2.head()
         self.fer_plot_analysis(df_2)
 
 
-    def fer_plot_analysis(df):
+    def fer_plot_analysis(self, df):
         plt.figure(figsize=(5, 3))
         plt.plot(df['problems_lineas_vacias'], label='Líneas vacías')
         plt.plot(df['problems_caracteres_especiales'], label='Caracteres especiales')
         plt.legend()
         plt.show()
 
-    def analisi_text(text):
+    def analisi_text(self, text):
         problemas = {}
 
         control_chars = [c for c in text if unicodedata.category(c)[0] == 'C' and c not in '\n\t']

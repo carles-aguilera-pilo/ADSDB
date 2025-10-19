@@ -90,7 +90,7 @@ class TrustedZoneImages(StrategyTrustedZone):
         df.head()
 
 
-    def analisi_imagen(img):
+    def analisi_imagen(self, img):
         
         img = Image.open(BytesIO(img))
         modo = img.mode
