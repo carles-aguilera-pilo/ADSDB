@@ -7,4 +7,4 @@ venv/
 *.onnx*
 output/
 .env
-
+.DS_Store
