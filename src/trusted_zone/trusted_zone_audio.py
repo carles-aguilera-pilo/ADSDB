@@ -33,7 +33,7 @@ new_bucket = "trusted-zone"
 bucket_origen = "formatted-zone"
 prefix_origen = "audio/"
 bucket_desti = "trusted-zone"
-freq_final = 44100
+freq_final = 48000
 
 class TrustedZoneAudio(StrategyTrustedZone):
     
