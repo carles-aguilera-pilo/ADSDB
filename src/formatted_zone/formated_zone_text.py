@@ -26,10 +26,7 @@ class FormatedZoneText(StrategyFormattedZone):
     def executar(self):
 
         minio_client = Connection()
-        try:
-            minio_client.create_bucket(Bucket=new_bucket)
-        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
-            print(f"Bucket '{new_bucket}' already exists")
+        self.provar_existencia_bucket(new_bucket, minio_client)
 
         paginator = minio_client.get_paginator("list_objects_v2")
 
@@ -50,3 +47,9 @@ class FormatedZoneText(StrategyFormattedZone):
                     print(f"[ERROR]: An error occurred while moving {filename} between zones: {e}")
                 except Exception as e:
                     print(f"[ERROR]: An error occurred while manipulating {filename}: {e}")
+                    
+    def provar_existencia_bucket(self, bucket_name, minio_client):
+        try:
+            minio_client.create_bucket(Bucket=new_bucket)
+        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
+            print(f"Bucket '{new_bucket}' already exists")
