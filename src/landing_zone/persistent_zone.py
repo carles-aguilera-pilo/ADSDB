@@ -3,7 +3,7 @@ import boto3
 import os
 from dotenv import load_dotenv
 from tqdm import tqdm
-from notebooks.landing_zone.aStrategyLanding import StrategyLandingZone
+from src.landing_zone.aStrategyLanding import StrategyLandingZone
 import sys
 from pathlib import Path
 

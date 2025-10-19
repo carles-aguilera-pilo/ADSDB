@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from notebooks.landing_zone.aStrategyLanding import StrategyLandingZone
+from src.landing_zone.aStrategyLanding import StrategyLandingZone
 
 
 class LandingZone:

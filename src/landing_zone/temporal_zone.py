@@ -11,7 +11,7 @@ parent_dir = current_dir.parent
 sys.path.append(str(parent_dir))
 
 from connection import Connection
-from notebooks.landing_zone.aStrategyLanding import StrategyLandingZone
+from src.landing_zone.aStrategyLanding import StrategyLandingZone
 class TemporalZone(StrategyLandingZone):
     
     def executar(self):

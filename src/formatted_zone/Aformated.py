@@ -1,4 +1,4 @@
-from notebooks.formatted_zone.aStrategyFormatted import StrategyFormattedZone
+from src.formatted_zone.aStrategyFormatted import StrategyFormattedZone
 
 class FormatedZone:
     

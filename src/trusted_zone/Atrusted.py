@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from notebooks.trusted_zone.aStrategyTrusted import StrategyTrustedZone
+from src.trusted_zone.aStrategyTrusted import StrategyTrustedZone
 
 class TrustedZone:
     strategy: StrategyTrustedZone = None

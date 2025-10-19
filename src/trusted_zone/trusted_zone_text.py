@@ -17,7 +17,7 @@ parent_dir = current_dir.parent
 sys.path.append(str(parent_dir))
 
 from connection import Connection
-from notebooks.trusted_zone.aStrategyTrusted import StrategyTrustedZone
+from src.trusted_zone.aStrategyTrusted import StrategyTrustedZone
 
 new_bucket = "trusted-zone"
 bucket_origen = "formatted-zone"

@@ -14,7 +14,7 @@ parent_dir = current_dir.parent
 sys.path.append(str(parent_dir))
 
 from connection import Connection
-from notebooks.formatted_zone.aStrategyFormatted import StrategyFormattedZone
+from src.formatted_zone.aStrategyFormatted import StrategyFormattedZone
 
 bucket_origin = "persistent-landing"
 bucket_destination = "formatted-zone"

@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import wave
 from piper import PiperVoice
-from notebooks.landing_zone.aStrategyLanding import StrategyLandingZone
+from src.landing_zone.aStrategyLanding import StrategyLandingZone
 
 
 class DataCollection(StrategyLandingZone):
