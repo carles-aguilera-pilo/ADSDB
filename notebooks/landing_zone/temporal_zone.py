@@ -25,12 +25,14 @@ class TemporalZone(StrategyLandingZone):
             print(f"Bucket '{new_bucket}' already exists")
         DATASET_COUNT = 3
         for i in range(1, DATASET_COUNT + 1):
-            dataset_path = f"../../output/dataset{i}/"
-            for root, dirs, files in os.walk(dataset_path):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    try:
-                        minio_client.upload_file(file_path, new_bucket, file)
-                        print(f"Uploaded {file} to s3://{new_bucket}/{file}")
-                    except Exception as e:
-                        print(f"Failed to upload {file}: {e}")
+            dataset_path = f"output/dataset{i}/"
+            if os.path.exists(dataset_path):
+                for root, dirs, files in os.walk(dataset_path):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        try:
+                            minio_client.upload_file(file_path, new_bucket, file)
+                        except Exception as e:
+                            print(f"Failed to upload {file}: {e}")
+            else:
+                print(f"Path {dataset_path} does not exist")

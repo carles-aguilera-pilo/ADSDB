@@ -28,7 +28,7 @@ prefix_origen = "text/"
 class TrustedZoneText(StrategyTrustedZone):
     
     def executar(self):
-        minio_client = connection.Connection()
+        minio_client = Connection()
         try:
             minio_client.create_bucket(Bucket=new_bucket)
         except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):

@@ -22,39 +22,40 @@ try:
     print("=== INICIANDO PIPELINE DE PROCESAMIENTO DE DATOS ===")
     
     # EXECUTE THE LANDING ZONE
-    print("\n1. Executing Landing Zone...")
     landing_zone = LandingZone(DataCollection())
     landing_zone.executar()
-    
-    landing_zone.set_strategy(TemporalZone())
+
+    landing_zone = LandingZone(TemporalZone())
+    landing_zone.executar()
+
+    landing_zone = LandingZone(PersistentZone())
     landing_zone.executar()
     
-    landing_zone.set_strategy(PersistentZone())
-    landing_zone.executar()
+    
     
     # EXECUTE THE FORMATTED ZONE
-    #print("\n2. Executing Formatted Zone...")
-    #formated_zone = FormatedZone(FormatedZoneAudio())
-    #formated_zone.executar()
+    print("\n2. Executing Formatted Zone...")
+    formated_zone = FormatedZone(FormatedZoneAudio())
+    formated_zone.executar()
     
-    #formated_zone.set_strategy(FormatedZoneImages())
-    #formated_zone.executar()
+    formated_zone.set_strategy(FormatedZoneImages())
+    formated_zone.executar()
     
-    #formated_zone.set_strategy(FormatedZoneText())
-    #formated_zone.executar()
+    formated_zone.set_strategy(FormatedZoneText())
+    formated_zone.executar()
     
     # EXECUTE THE TRUSTED ZONE
-    #print("\n3. Executing Trusted Zone...")
-    #trusted_zone = TrustedZone(TrustedZoneAudio())
-    #trusted_zone.executar()
+    print("\n3. Executing Trusted Zone...")
+    trusted_zone = TrustedZone(TrustedZoneAudio())
+    trusted_zone.executar()
     
-    #trusted_zone.set_strategy(TrustedZoneImages())
-    #trusted_zone.executar()
+    trusted_zone.set_strategy(TrustedZoneImages())
+    trusted_zone.executar()
     
-    #trusted_zone.set_strategy(TrustedZoneText())
-    #trusted_zone.executar()
+    trusted_zone.set_strategy(TrustedZoneText())
+    trusted_zone.executar()
     
-    #print("\n=== PIPELINE COMPLETED SUCCESSFULLY ===")
+    print("\n=== PIPELINE COMPLETED SUCCESSFULLY ===")
     
 except ImportError as e:
     print(f"Import error: {e}")
