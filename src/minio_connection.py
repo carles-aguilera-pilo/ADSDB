@@ -2,7 +2,7 @@ import boto3
 import os
 from dotenv import load_dotenv
 
-class Connection:
+class MinIOConnection:
     
     _instance = None
     

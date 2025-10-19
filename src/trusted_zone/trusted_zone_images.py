@@ -18,7 +18,7 @@ current_dir = Path(__file__).parent
 parent_dir = current_dir.parent
 sys.path.append(str(parent_dir))
 
-from connection import Connection
+from minio_connection import MinIOConnection
 from src.trusted_zone.aStrategyTrusted import StrategyTrustedZone
 
 new_bucket = "trusted-zone"
@@ -31,7 +31,7 @@ mida_final = (600, 450)
 class TrustedZoneImages(StrategyTrustedZone):
     
     def executar(self):
-        minio_client = Connection()
+        minio_client = MinIOConnection()
         try:
             minio_client.create_bucket(Bucket=new_bucket)
         except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):

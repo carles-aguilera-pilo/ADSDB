@@ -10,13 +10,13 @@ current_dir = Path(__file__).parent
 parent_dir = current_dir.parent
 sys.path.append(str(parent_dir))
 
-from connection import Connection
+from minio_connection import MinIOConnection
 from src.landing_zone.aStrategyLanding import StrategyLandingZone
 class TemporalZone(StrategyLandingZone):
     
     def executar(self):
         print("Executing Temporal Zone...")
-        minio_client = Connection()
+        minio_client = MinIOConnection()
         print(minio_client)
         new_bucket = "landing-zone"
         try:

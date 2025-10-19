@@ -12,7 +12,7 @@ current_dir = Path(__file__).parent
 parent_dir = current_dir.parent
 sys.path.append(str(parent_dir))
 
-from connection import Connection
+from minio_connection import MinIOConnection
 
 landing_zone = "landing-zone"
 persistent_landing = "persistent-landing"
@@ -22,7 +22,7 @@ class PersistentZone(StrategyLandingZone):
     
     def executar(self):
         print("Executing Persistent Zone...")
-        minio_client = Connection()
+        minio_client = MinIOConnection()
         try:
             minio_client.create_bucket(Bucket=new_bucket)
         except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):

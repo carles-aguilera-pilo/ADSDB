@@ -13,7 +13,7 @@ current_dir = Path(__file__).parent
 parent_dir = current_dir.parent
 sys.path.append(str(parent_dir))
 
-from connection import Connection
+from minio_connection import MinIOConnection
 from src.formatted_zone.aStrategyFormatted import StrategyFormattedZone
 
 bucket_origin = "persistent-landing"
@@ -25,7 +25,7 @@ new_bucket = "formatted-zone"
 class FormatedZoneAudio(StrategyFormattedZone):
     
     def executar(self):
-        minio_client = Connection()
+        minio_client = MinIOConnection()
         self.provar_existencia_bucket(new_bucket, minio_client)
         paginator = minio_client.get_paginator("list_objects_v2")
 
