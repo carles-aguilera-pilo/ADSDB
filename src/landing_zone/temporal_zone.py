@@ -17,12 +17,8 @@ class TemporalZone(StrategyLandingZone):
     def executar(self):
         print("Executing Temporal Zone...")
         minio_client = MinIOConnection()
-        print(minio_client)
         new_bucket = "landing-zone"
-        try:
-            minio_client.create_bucket(Bucket=new_bucket)
-        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
-            print(f"Bucket '{new_bucket}' already exists")
+        self.provar_existencia_bucket(new_bucket, minio_client)
         DATASET_COUNT = 3
         for i in range(1, DATASET_COUNT + 1):
             dataset_path = f"output/dataset{i}/"
@@ -36,3 +32,9 @@ class TemporalZone(StrategyLandingZone):
                             print(f"Failed to upload {file}: {e}")
             else:
                 print(f"Path {dataset_path} does not exist")
+                
+    def provar_existencia_bucket(self, bucket_name, minio_client):
+        try:
+            minio_client.create_bucket(Bucket=bucket_name)
+        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
+            print(f"Bucket '{bucket_name}' already exists")

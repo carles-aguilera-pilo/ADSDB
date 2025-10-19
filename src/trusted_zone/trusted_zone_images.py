@@ -32,21 +32,8 @@ class TrustedZoneImages(StrategyTrustedZone):
     
     def executar(self):
         minio_client = MinIOConnection()
-        try:
-            minio_client.create_bucket(Bucket=new_bucket)
-        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
-            print(f"Bucket '{new_bucket}' already exists")
-        analysis = []
-        paginator = minio_client.get_paginator("list_objects_v2")
-        for page in paginator.paginate(Bucket="formatted-zone", Prefix="images/"):
-            for obj in tqdm(page.get("Contents", []), desc="Processant imatges"):
-                key = obj["Key"]
-                filename = key.split("/")[-1]
-                response = minio_client.get_object(Bucket="formatted-zone", Key=key)
-                image_data = response["Body"].read()
-                analysis.append(self.analisi_imagen(image_data))
-        df= pd.DataFrame(analysis)
-        df.head()
+        self.provar_existencia_bucket(new_bucket, minio_client)
+        self.fer_analysis(minio_client, "formatted-zone")
         paginator = minio_client.get_paginator("list_objects_v2")
         for page in paginator.paginate(Bucket=bucket_origen, Prefix=prefix_origen):
             for obj in tqdm(page.get("Contents", []), desc="Processant imatges"):
@@ -77,18 +64,7 @@ class TrustedZoneImages(StrategyTrustedZone):
                     Key=new_key,
                     Body=buffer
                 )
-                
-        analysis_2 = []
-        for page in paginator.paginate(Bucket="trusted-zone", Prefix="images/"):
-            for obj in tqdm(page.get("Contents", []), desc="Processant imatges"):
-                key = obj["Key"]
-                filename = key.split("/")[-1]
-                response = minio_client.get_object(Bucket="trusted-zone", Key=key)
-                image_data = response["Body"].read()
-                analysis_2.append(self.analisi_imagen(image_data))
-        df= pd.DataFrame(analysis_2)
-        df.head()
-
+        self.fer_analysis(minio_client, "trusted-zone")
 
     def analisi_imagen(self, img):
         
@@ -101,34 +77,28 @@ class TrustedZoneImages(StrategyTrustedZone):
         fosca = False
         brillant = False
         contrast = False
-        
         if brillo < 80:
             fosca = True
         elif brillo > 200:
             brillant = True
-        
         if contraste < 10:
             contrast = True
-
         necessita_nitidez = False
         variance = cv2.Laplacian(cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY), cv2.CV_64F).var()
         if variance < 50:
             necessita_nitidez = True
-        
         #---- NOISE ----
         noise = ""
         gray = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
         blur = cv2.GaussianBlur(gray, (3,3), 0)
         diff = cv2.absdiff(gray, blur)
         local_variance = np.var(diff)
-        
         if local_variance < 50:
             noise = 'Low'
         elif local_variance < 150:
             noise = 'Medium'
         else:
             noise = 'High'
-        
         return{
             'brillo': brillo,
             'contraste': contraste,
@@ -138,3 +108,23 @@ class TrustedZoneImages(StrategyTrustedZone):
             'nitidez': necessita_nitidez,
             'noise': noise
         }
+        
+    def fer_analysis(self, minio_client, bucket):
+        analysis = []
+        paginator = minio_client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket, Prefix="images/"):
+            for obj in tqdm(page.get("Contents", []), desc="Processant imatges"):
+                key = obj["Key"]
+                filename = key.split("/")[-1]
+                response = minio_client.get_object(Bucket=bucket, Key=key)
+                image_data = response["Body"].read()
+                analysis.append(self.analisi_imagen(image_data))
+        df= pd.DataFrame(analysis)
+        df.head()
+        
+    def provar_existencia_bucket(self, bucket_name, minio_client):
+        try:
+            minio_client.create_bucket(Bucket=new_bucket)
+        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
+            print(f"Bucket '{new_bucket}' already exists")
+        

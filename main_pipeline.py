@@ -20,7 +20,7 @@ try:
     from src.trusted_zone.trusted_zone_images import TrustedZoneImages
     from src.trusted_zone.trusted_zone_text import TrustedZoneText
 
-    from src.exploitation_zone.exploit_zone_text import ExploitZoneText
+    #from src.exploitation_zone.exploit_zone_text import ExploitZoneText
     
     print("=== INICIANDO PIPELINE DE PROCESAMIENTO DE DATOS ===")
     # EXECUTE THE LANDING ZONE
@@ -57,9 +57,9 @@ try:
     trusted_zone.set_strategy(TrustedZoneText())
     trusted_zone.executar()
     # EXECUTE THE EXPLOITATION ZONE
-    print("\n4. Executing Exploitation Zone...")
-    exploit_zone = ExploitZone(ExploitZoneText())
-    exploit_zone.executar()
+    #print("\n4. Executing Exploitation Zone...")
+    #exploit_zone = ExploitZone(ExploitZoneText())
+    #exploit_zone.executar()
 
     print("\n=== PIPELINE COMPLETED SUCCESSFULLY ===")
     

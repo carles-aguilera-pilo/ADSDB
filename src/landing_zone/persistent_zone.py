@@ -23,10 +23,7 @@ class PersistentZone(StrategyLandingZone):
     def executar(self):
         print("Executing Persistent Zone...")
         minio_client = MinIOConnection()
-        try:
-            minio_client.create_bucket(Bucket=new_bucket)
-        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
-            print(f"Bucket '{new_bucket}' already exists")
+        self.provar_existencia_bucket(new_bucket, minio_client)
         paginator = minio_client.get_paginator("list_objects_v2")
         file_extensions = set()
         for page in paginator.paginate(Bucket=landing_zone):
@@ -53,7 +50,6 @@ class PersistentZone(StrategyLandingZone):
         for page in paginator.paginate(Bucket=landing_zone):
             for obj in page.get("Contents", []):
                 key = obj.get("Key", "")
-
                 file_ext = os.path.splitext(key)[1].lower()
                 dest_folder = folder_map.get(file_ext, file_ext.strip("."))
                 if not dest_folder:
@@ -63,9 +59,18 @@ class PersistentZone(StrategyLandingZone):
                     'Bucket': landing_zone,
                     'Key': key
                 }
-                minio_client.copy_object(
+                self.copy_objecte(new_key, copy_source, minio_client)
+        
+    def provar_existencia_bucket(self, bucket_name, minio_client):
+        try:
+            minio_client.create_bucket(Bucket=new_bucket)
+        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
+            print(f"Bucket '{new_bucket}' already exists")
+    
+    def copy_objecte(self, new_key, copy_source, minio_client):
+        minio_client.copy_object(
                     CopySource=copy_source,
                     Bucket=persistent_landing,
                     Key=new_key
                 )
-        print("Files have been organized in the persistent landing bucket.")
+        

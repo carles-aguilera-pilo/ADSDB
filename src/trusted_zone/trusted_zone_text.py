@@ -29,32 +29,13 @@ class TrustedZoneText(StrategyTrustedZone):
     
     def executar(self):
         minio_client = MinIOConnection()
-        try:
-            minio_client.create_bucket(Bucket=new_bucket)
-        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
-            print(f"Bucket '{new_bucket}' already exists")
+        self.provar_existencia_bucket(new_bucket, minio_client)
 
-        analysis = []
-        paginator = minio_client.get_paginator("list_objects_v2")
-
-        for page in paginator.paginate(Bucket="formatted-zone", Prefix="text/"):
-            for obj in tqdm(page.get("Contents", []), desc="Processant fitxers de text"):
-                key = obj["Key"]
-                filename = key.split("/")[-1]
-                response = minio_client.get_object(Bucket="formatted-zone", Key=key)
-                text = response["Body"].read().decode("utf-8", errors="ignore")
-                analysis.append(self.analisi_text(text))
-                
-
-        df = pd.DataFrame(analysis)
-        df.head()
-        self.fer_plot_analysis(df)
-
+        self.fer_analysis(minio_client, "formatted-zone")
         paginator = minio_client.get_paginator("list_objects_v2")
         for page in paginator.paginate(Bucket=bucket_origen, Prefix=prefix_origen):
             for obj in tqdm(page.get("Contents", []), desc="Processant fitxers de text"):
                 key = obj["Key"]
-
                 filename = key.split("/")[-1]
                 response = minio_client.get_object(Bucket=bucket_origen, Key=key)
                 text = response["Body"].read().decode("utf-8", errors="ignore")
@@ -84,21 +65,13 @@ class TrustedZoneText(StrategyTrustedZone):
                     Key=new_key,
                     Body=text_clean.encode("utf-8")
                 )
-
-        analysis_2= []
-        paginator = minio_client.get_paginator("list_objects_v2")
-        for page in paginator.paginate(Bucket="trusted-zone", Prefix="text/"):
-            for obj in tqdm(page.get("Contents", []), desc="Processant fitxers de text"):
-                key = obj["Key"]
-                filename = key.split("/")[-1]
-                response = minio_client.get_object(Bucket="trusted-zone", Key=key)
-                text = response["Body"].read().decode("utf-8", errors="ignore")
-                analysis_2.append(self.analisi_text(text))
-                
-        df_2 = pd.DataFrame(analysis_2)
-        df_2.head()
-        self.fer_plot_analysis(df_2)
-
+        self.fer_analysis(minio_client, "trusted-zone")
+        
+    def provar_existencia_bucket(self, bucket_name, minio_client):
+        try:
+            minio_client.create_bucket(Bucket=new_bucket)
+        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
+            print(f"Bucket '{new_bucket}' already exists")
 
     def fer_plot_analysis(self, df):
         plt.figure(figsize=(5, 3))
@@ -109,33 +82,24 @@ class TrustedZoneText(StrategyTrustedZone):
 
     def analisi_text(self, text):
         problemas = {}
-
         control_chars = [c for c in text if unicodedata.category(c)[0] == 'C' and c not in '\n\t']
         problemas["caracteres_control"] = len(control_chars)
-
         lineas_con_espacios = [line for line in text.splitlines() if line.startswith(" ") or line.endswith(" ")]
         problemas["lineas_con_espacios"] = len(lineas_con_espacios)
-
         saltos_multiples = bool(re.search(r"\n\s*\n\s*\n+", text))
         problemas["saltos_multiples"] = saltos_multiples
-
         lineas_vacias = [line for line in text.splitlines() if not line.strip()]
         problemas["lineas_vacias"] = len(lineas_vacias)
-
         caracteres_invalidos = re.findall(r"[^\w\s\.\,\;\:\!\?\(\)\[\]\"\'\-\+\=\%\&\$\/\@\#\*]", text)
         problemas["caracteres_especiales"] = len(caracteres_invalidos)
-
         comillas_tipograficas = re.findall(r"[“”«»]", text)
         apostrofes_tipograficos = re.findall(r"[‘’]", text)
         problemas["comillas_tipograficas"] = len(comillas_tipograficas)
         problemas["apostrofes_tipograficos"] = len(apostrofes_tipograficos)
-
         guiones_multiples = bool(re.search(r"-{2,}", text))
         problemas["guiones_multiples"] = guiones_multiples
-
         texto_vacio = not text.strip()
         problemas["texto_vacio"] = texto_vacio
-
         return{
             "problems_control_caracters": problemas["caracteres_control"],
             "problems_lineas_con_espacios": problemas["lineas_con_espacios"],
@@ -147,3 +111,17 @@ class TrustedZoneText(StrategyTrustedZone):
             "problems_guiones_multiples": problemas["guiones_multiples"],
             "problems_texto_vacio": problemas["texto_vacio"]
         }
+        
+    def fer_analysis(self, minio_client, bucket):
+        analysis= []
+        paginator = minio_client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket, Prefix="text/"):
+            for obj in tqdm(page.get("Contents", []), desc="Processant fitxers de text"):
+                key = obj["Key"]
+                filename = key.split("/")[-1]
+                response = minio_client.get_object(Bucket=bucket, Key=key)
+                text = response["Body"].read().decode("utf-8", errors="ignore")
+                analysis.append(self.analisi_text(text))
+        df = pd.DataFrame(analysis)
+        df.head()
+        self.fer_plot_analysis(df)

@@ -45,25 +45,8 @@ class TrustedZoneAudio(StrategyTrustedZone):
         global freq_final
         global new_bucket
         minio_client = MinIOConnection()
-        try:
-            minio_client.create_bucket(Bucket=new_bucket)
-        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
-            print(f"Bucket '{new_bucket}' already exists")
-
-        analysis_results = []
-        paginator = minio_client.get_paginator("list_objects_v2")
-        for page in paginator.paginate(Bucket=bucket_origen, Prefix=prefix_origen):
-            for obj in tqdm(page.get("Contents", []), desc="Processant àudios"):
-                key = obj["Key"]
-                filename = key.split("/")[-1]
-                response = minio_client.get_object(Bucket=bucket_origen, Key=key)
-                audio_data = response["Body"].read()
-                analysis_results.append(self.analyze_audio_file(audio_data))
-                
-        df = pd.DataFrame(analysis_results)
-        df.head()
-        self.make_plot_analysis(df)
-
+        self.provar_existencia_bucket(new_bucket, minio_client)
+        self.fer_analysis(minio_client, "formatted-zone")
         paginator = minio_client.get_paginator("list_objects_v2")
         for page in paginator.paginate(Bucket=bucket_origen, Prefix=prefix_origen):
             for obj in tqdm(page.get("Contents", []), desc="Processant àudios"):
@@ -95,28 +78,8 @@ class TrustedZoneAudio(StrategyTrustedZone):
                 audio.export(buffer, format="mp3", bitrate="192k")
                 buffer.seek(0)
                 new_key = f"audio/{filename}"
-                minio_client.put_object(
-                    Bucket=bucket_desti,
-                    Key=new_key,
-                    Body=buffer
-                )
-                
-        analysis_results_2 = []
-        bucket_origen = "trusted-zone"
-        prefix_origen = "audio/"
-        paginator = minio_client.get_paginator("list_objects_v2")
-        for page in paginator.paginate(Bucket=bucket_origen, Prefix=prefix_origen):
-            for obj in tqdm(page.get("Contents", []), desc="Processant àudios"):
-                key = obj["Key"]
-                filename = key.split("/")[-1]
-                response = minio_client.get_object(Bucket=bucket_origen, Key=key)
-                audio_data = response["Body"].read()
-                analysis_results_2.append(self.analyze_audio_file(audio_data))
-                
-        df2 = pd.DataFrame(analysis_results_2)
-        df2.head()
-        self.make_plot_analysis(df2)
-        
+                self.put_object(minio_client, bucket_desti, new_key, buffer)
+        self.fer_analysis(minio_client, "trusted-zone")
         
     def detectar_filtro(self, centroid, rolloff, ratio):
             if centroid < 1500 and rolloff < 3000 and ratio < 0.5:
@@ -198,3 +161,31 @@ class TrustedZoneAudio(StrategyTrustedZone):
         axes[1,1].set_ylabel('%')
         plt.tight_layout()
         plt.show()
+    
+    def provar_existencia_bucket(self, bucket_name, minio_client):
+        try:
+            minio_client.create_bucket(Bucket=new_bucket)
+        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
+            print(f"Bucket '{new_bucket}' already exists")
+            
+            
+    def fer_analysis(self, minio_client, bucket):
+        analysis = []
+        paginator = minio_client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket, Prefix="audio/"):
+            for obj in tqdm(page.get("Contents", []), desc="Processant àudios"):
+                key = obj["Key"]
+                filename = key.split("/")[-1]
+                response = minio_client.get_object(Bucket=bucket, Key=key)
+                audio_data = response["Body"].read()
+                analysis.append(self.analyze_audio_file(audio_data))
+        df = pd.DataFrame(analysis)
+        df.head()
+        self.make_plot_analysis(df)
+    
+    def put_object(self, minio_client, bucket, key, buffer):
+        minio_client.put_object(
+            Bucket=bucket,
+            Key=key,
+            Body=buffer
+        )
