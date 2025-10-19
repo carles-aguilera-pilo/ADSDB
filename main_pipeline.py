@@ -3,6 +3,7 @@ try:
     from src.landing_zone.Alanding import LandingZone
     from src.formatted_zone.Aformated import FormatedZone
     from src.trusted_zone.Atrusted import TrustedZone
+    from src.exploitation_zone.Aexploit import ExploitZone
     from src.landing_zone.data_collection import DataCollection
 
 
@@ -18,9 +19,10 @@ try:
     from src.trusted_zone.trusted_zone_audio import TrustedZoneAudio
     from src.trusted_zone.trusted_zone_images import TrustedZoneImages
     from src.trusted_zone.trusted_zone_text import TrustedZoneText
+
+    from src.exploitation_zone.exploit_zone_text import ExploitZoneText
     
     print("=== INICIANDO PIPELINE DE PROCESAMIENTO DE DATOS ===")
-    
     # EXECUTE THE LANDING ZONE
     landing_zone = LandingZone(DataCollection())
     landing_zone.executar()
@@ -54,7 +56,11 @@ try:
     
     trusted_zone.set_strategy(TrustedZoneText())
     trusted_zone.executar()
-    
+    # EXECUTE THE EXPLOITATION ZONE
+    print("\n4. Executing Exploitation Zone...")
+    exploit_zone = ExploitZone(ExploitZoneText())
+    exploit_zone.executar()
+
     print("\n=== PIPELINE COMPLETED SUCCESSFULLY ===")
     
 except ImportError as e:

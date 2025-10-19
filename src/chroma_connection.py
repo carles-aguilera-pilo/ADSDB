@@ -10,7 +10,7 @@ class ChromaConnection:
     def __new__(cls):
         if cls._instance is None:
             load_dotenv()
-            chroma_url = "http://" + os.getenv("CHROMADB_ENDPOINT")
+            chroma_host = os.getenv("CHROMADB_ENDPOINT")
             chroma_port = os.getenv("CHROMADB_PORT")
-            cls._instance = chromadb.HttpClient(host=chroma_url, port=chroma_port)
+            cls._instance = chromadb.HttpClient(host=chroma_host, port=chroma_port)
         return cls._instance
