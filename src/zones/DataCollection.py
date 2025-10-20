@@ -34,6 +34,8 @@ class DataCollection():
     @classmethod
     def collect_data(cls):
         cls.collect_images()
+        #cls.collect_texts()
+        #cls.collect_audios()
 
     @classmethod
     def collect_images(cls): 
@@ -55,20 +57,19 @@ class DataCollection():
             image.save(save_path)
 
     @classmethod
-    def upload_data(cls):
+    def upload_data(cls, bucket_destination):
         minio_client = MinIOConnection()
-        new_bucket = "landing-zone"
         try:
-            minio_client.create_bucket(Bucket=new_bucket)
+            minio_client.create_bucket(Bucket=bucket_destination)
         except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
-            print(f"Bucket '{new_bucket}' already exists")
+            print(f"Bucket '{bucket_destination}' already exists")
 
         for dataset in os.listdir(cls.OUTPUT_DIR):
-            for root, _, files in os.walk(dataset):
+            for root, _, files in os.walk(cls.OUTPUT_DIR + dataset):
                 for file in files:
                     file_path = os.path.join(root, file)
                     try:
-                        minio_client.upload_file(file_path, new_bucket, file)
+                        minio_client.upload_file(file_path, bucket_destination, file)
                     except Exception as e:
                         print(f"Failed to upload {file}: {e}")
             
