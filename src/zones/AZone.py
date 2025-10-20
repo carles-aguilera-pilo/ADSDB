@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from src.minio_connection import MinIOConnection
 from src.dataobj.ImageObj import ImageObj
+from src.dataobj.AudioObj import AudioObj
 
 class AZone(ABC):
 
@@ -32,10 +33,10 @@ class AZone(ABC):
                     o = None
                     if modal == "images":
                         o = ImageObj(key, response["Body"].read())
-
                         self.treatData(o)
-                    #elif modal == "audios":
-                    #    o = AudioObj(key, response["Body"].read())
+                    elif modal == "audios":
+                        o = AudioObj(key, response["Body"].read())
+                        self.treatData(o)
                     #elif modal == "texts":
                     #    o = TextObj(key, response["Body"].read())
                     ###########################################
