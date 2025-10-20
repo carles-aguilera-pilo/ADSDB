@@ -38,9 +38,9 @@ class DataCollection():
 
     @classmethod
     def collect_data(cls):
-        #cls.collect_images()
+        cls.collect_images()
         cls.collect_texts()
-        #cls.collect_audios()
+        cls.collect_audios()
 
     @classmethod
     def collect_audios(cls):
