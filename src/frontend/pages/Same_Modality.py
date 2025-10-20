@@ -1,8 +1,6 @@
 import streamlit as st
 from audiorecorder import audiorecorder
-import os
-import time
-import uuid
+import io
 
 # --- Page Config ---
 st.set_page_config(
@@ -97,30 +95,32 @@ with tab3:
             if "audio" in msg:
                 st.audio(msg["audio"])
 
-    recorded_bytes = audiorecorder(
+    audio_segment = audiorecorder(
         show_visualizer=True,
         key="audiorecorder"
     )
-    
-    recorded_bytes.export("output.wav", format="wav")
+
+    buffer = io.BytesIO()
+    audio_segment.export(buffer, format="wav")
 
     if (
-        isinstance(recorded_bytes, bytes)
-        and len(recorded_bytes) > 100
-        and recorded_bytes != st.session_state.last_processed_audio
+        isinstance(buffer.getvalue(), bytes)
+        and len(buffer.getvalue()) > 100
+        and buffer.getvalue() != st.session_state.last_processed_audio
     ):
-        st.session_state.last_processed_audio = recorded_bytes
+        st.session_state.last_processed_audio = buffer.getvalue()
         
         st.session_state.audio_messages.append({
             "role": "user", 
-            "audio": recorded_bytes
+            "audio": buffer.getvalue()
         })
-        
-        response = get_mock_response(prompt=None, mode="audio", data=recorded_bytes)
-        
+
+        response = get_mock_response(prompt=None, mode="audio", data=buffer.getvalue())
+
         st.session_state.audio_messages.append({
             "role": "assistant", 
             "content": response
         })
         
         st.rerun()
+        
