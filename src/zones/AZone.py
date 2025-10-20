@@ -4,13 +4,21 @@ from dataobj.ImageObj import ImageObj
 
 class AZone(ABC):
 
+    def __init__(self, bucket_origin, bucket_destination):
+        self.bucket_origin = bucket_origin
+        self.bucket_destination = bucket_destination
+
     @abstractmethod
     def treatData(obj):
         pass
 
     def execute(self):
         minio_client = MinIOConnection()
-        #self.provar_existencia_bucket(new_bucket, minio_client)
+        try:
+            minio_client.create_bucket(Bucket=self.bucket_origin)
+        except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
+            print(f"Bucket '{new_bucket}' already exists")
+        
         paginator = minio_client.get_paginator("list_objects_v2")
 
         for modal in self.supported_modals:

@@ -1,7 +1,10 @@
 from zones.AZone import AZone
 
 class TemporalLanding(AZone):
-    NEXT_BUCKET = "persistent-zone"
+    def __init__(self, bucket_origin, bucket_destination):
+        self.bucket_origin = bucket_origin
+        self.bucket_destination = bucket_destination
 
-    def __init__(self):
-        self
+    def treatData(self, dataobj):
+        dataobj.save(self.bucket_destination)
+        
