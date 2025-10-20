@@ -28,3 +28,4 @@ sentence-transformers==5.1.1
 opencv-python==4.12.0.88
 librosa==0.11.0
 streamlit==1.50.0
+streamlit_audiorecorder==0.0.6
