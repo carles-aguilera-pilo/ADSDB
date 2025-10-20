@@ -25,7 +25,7 @@ class AZone(ABC):
 
         for modal in self.supported_modals:
             for page in paginator.paginate(Bucket=self.bucket_origin, Prefix=modal):
-                for obj in page["Contents"]:
+                for obj in page.get("Contents",[]):
                     key = obj["Key"]
                     response = minio_client.get_object(Bucket=self.bucket_origin, Key=key)
                     
