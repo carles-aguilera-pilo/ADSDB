@@ -15,9 +15,9 @@ class AZone(ABC):
     def execute(self):
         minio_client = MinIOConnection()
         try:
-            minio_client.create_bucket(Bucket=self.bucket_origin)
+            minio_client.create_bucket(Bucket=self.bucket_destination)
         except (minio_client.exceptions.BucketAlreadyExists, minio_client.exceptions.BucketAlreadyOwnedByYou):
-            print(f"Bucket '{new_bucket}' already exists")
+            print(f"Bucket '{self.bucket_destination}' already exists")
         
         paginator = minio_client.get_paginator("list_objects_v2")
 

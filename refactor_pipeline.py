@@ -1,5 +1,21 @@
+from zones.TemporalLanding import TemporalLanding
 from zones.PersistentLanding import PersistentLanding
+from zones.FormattedZone import FormattedZone
+from zones.TrustedZone import TrustedZone
+from zones.DataCollection import DataCollection
 
+SUPPORTED_MODALS = ["images", "audios", "texts"] # These are the data modals contemplated in our pipeline. Should this be extended. See Readme for information about how to do it.
 
-persistent_landing = PersistentLanding(supported_modals = ["images", "audios", "texts"], bucket_origin = "persistent-zone", bucket_destination = "formatted-zone")
+DataCollection.collect_data()
+
+temporal_landing = TemporalLanding(bucket_origin = "temporal-landing", bucket_destination = "persistent-zone")
+temporal_landing.execute()
+
+persistent_landing = PersistentLanding(supported_modals = SUPPORTED_MODALS, bucket_origin = "persistent-zone", bucket_destination = "formatted-zone")
 persistent_landing.execute()
+
+formatted_zone = FormattedZone(bucket_origin = "formatted-zone", bucket_destination = "trusted-zone")
+formatted_zone.execute()
+
+#trusted_zone = TrustedZone(bucket_origin = "trusted-zone")
+#formatted_zone.execute()
