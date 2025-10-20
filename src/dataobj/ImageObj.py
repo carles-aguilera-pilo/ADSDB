@@ -6,7 +6,6 @@ import os
 import io
 
 class ImageObj(ADataObj):
-    
 
     def __init__(self, key, image_data):
         self.path_prefix = key.split("/")[0]
