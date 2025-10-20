@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from dataobj.ADataObj import ADataObj
+from src.dataobj.ADataObj import ADataObj
 from PIL import Image, ImageEnhance, ImageFilter
-from minio_connection import MinIOConnection
+from src.minio_connection import MinIOConnection
 import os
 import io
 

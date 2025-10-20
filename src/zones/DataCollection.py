@@ -1,8 +1,7 @@
-from zones.AZone import AZone
 from datasets import load_dataset
 import os
 from PIL import Image
-from minio_connection import MinIOConnection
+from src.minio_connection import MinIOConnection
 
 
 class DataCollection():

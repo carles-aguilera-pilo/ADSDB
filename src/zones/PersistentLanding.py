@@ -1,5 +1,4 @@
-from zones.AZone import AZone
-from minio_connection import MinIOConnection
+from src.zones.AZone import AZone
 
 class PersistentLanding(AZone):
     def __init__(self, supported_modals, bucket_origin, bucket_destination):
