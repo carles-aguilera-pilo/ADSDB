@@ -8,3 +8,7 @@ class ADataObj(ABC):
     @abstractmethod    
     def format(self):
         pass
+
+    @abstractmethod    
+    def clean(self):
+        pass
