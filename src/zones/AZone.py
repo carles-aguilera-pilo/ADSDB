@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from src.minio_connection import MinIOConnection
 from src.dataobj.ImageObj import ImageObj
 
-supported_modals = ["image", "audio", "text"]
+supported_modals = ["images", "audios", "texts"]
 
 class AZone(ABC):
 

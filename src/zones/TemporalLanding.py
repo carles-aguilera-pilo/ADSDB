@@ -19,17 +19,15 @@ class TemporalLanding(AZone):
             print(f"Bucket '{self.bucket_destination}' already exists")
         
         folder_map = {
-            ".mp3": "audio",
-            ".wav": "audio",
-            ".ogg": "audio",
+            ".mp3": "audios",
+            ".wav": "audios",
+            ".ogg": "audios",
             ".png": "images",
             ".jpg": "images",
             ".jpeg": "images",
-            ".csv": "tabular",
-            ".parquet": "tabular",
-            ".txt": "text",
-            ".md": "text",
-            ".json": "text",
+            ".txt": "texts",
+            ".md": "texts",
+            ".json": "texts",
         }
         
         paginator = minio_client.get_paginator("list_objects_v2")

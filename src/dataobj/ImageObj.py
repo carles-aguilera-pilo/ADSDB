@@ -9,7 +9,7 @@ class ImageObj(ADataObj):
     
 
     def __init__(self, key, image_data):
-        self.path_prefix = os.path.splitext(key.split("/")[0])
+        self.path_prefix = key.split("/")[0]
         split_filename = os.path.splitext(key.split("/")[1])
         self.filename = split_filename[0]
         self.extension = split_filename[1].lower()
@@ -17,10 +17,10 @@ class ImageObj(ADataObj):
 
     def save(self, bucket_destination):        
         buffer = io.BytesIO()
-        self.image.save(buffer, format=self.extension)
+        self.image.save(buffer, format=self.extension[1:])
         buffer.seek(0)
 
-        key = self.path_prefix + self.filename + self.extension
+        key = self.path_prefix + "/" + self.filename + self.extension
         minio_client = MinIOConnection()
         minio_client.upload_fileobj(Fileobj=buffer, Bucket=bucket_destination, Key=key)
         minio_client.head_object(Bucket=bucket_destination, Key=key) # Checks if the file was uploaded successfully and throws an exception otherwise.
