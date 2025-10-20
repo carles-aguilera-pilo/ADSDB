@@ -2,6 +2,9 @@ from datasets import load_dataset
 import os
 from PIL import Image
 from src.minio_connection import MinIOConnection
+import pandas as pd
+import wave
+from piper import PiperVoice
 
 
 class DataCollection():
@@ -33,9 +36,28 @@ class DataCollection():
 
     @classmethod
     def collect_data(cls):
-        cls.collect_images()
+        #cls.collect_images()
         #cls.collect_texts()
-        #cls.collect_audios()
+        cls.collect_audios()
+
+    @classmethod
+    def collect_audios(cls):
+        try:
+            os.makedirs(cls.OUTPUT_DIR, exist_ok=True)
+            os.makedirs(cls.OUTPUT_DIR + f"audios", exist_ok=True)
+        except FileExistsError:
+            pass
+
+        df = pd.read_json("hf://datasets/Moaaz55/skin_cancer_questions_answers/dataset.json", lines=True)
+        df = df.sample(n=100, random_state=42)
+        df = df.apply(lambda row: f"A: {row['Answer']}\n", axis=1)
+
+        voice = PiperVoice.load(os.path.join(cls.BASE_DIR, "en_US-lessac-medium.onnx"))
+
+        for i, text in enumerate(df):
+            text = text.replace("A: ", "").strip()
+            with wave.open(os.path.join(cls.OUTPUT_DIR, f"audios/answer_{i}.wav"), "wb") as wav_file:
+                voice.synthesize_wav(text, wav_file)
 
     @classmethod
     def collect_images(cls): 
