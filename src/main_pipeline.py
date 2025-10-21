@@ -56,7 +56,7 @@ try:
     
     trusted_zone.set_strategy(TrustedZoneText())
     trusted_zone.executar()
-    # EXECUTE THE EXPLOITATION ZONE
+    #EXECUTE THE EXPLOITATION ZONE
     print("\n4. Executing Exploitation Zone...")
     exploit_zone = ExploitZone(ExploitZoneText())
     exploit_zone.executar()
