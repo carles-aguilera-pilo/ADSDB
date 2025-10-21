@@ -9,14 +9,14 @@ SUPPORTED_MODALS = ["images", "audios", "texts"] # These are the data modals con
 DataCollection.collect_data()
 DataCollection.upload_data("temporal-landing-zone")
 
-temporal_landing = TemporalLanding(bucket_origin = "temporal-landing-zone", bucket_destination = "persistent-landing-zone")
+temporal_landing = TemporalLanding(supported_modals = SUPPORTED_MODALS, bucket_origin = "temporal-landing-zone", bucket_destination = "persistent-landing-zone")
 temporal_landing.execute()
 
 persistent_landing = PersistentLanding(supported_modals = SUPPORTED_MODALS, bucket_origin = "persistent-landing-zone", bucket_destination = "formatted-zone")
 persistent_landing.execute()
 
-formatted_zone = FormattedZone(bucket_origin = "formatted-zone", bucket_destination = "trusted-zone")
+formatted_zone = FormattedZone(supported_modals = SUPPORTED_MODALS, bucket_origin = "formatted-zone", bucket_destination = "trusted-zone")
 formatted_zone.execute()
 
-#trusted_zone = TrustedZone(bucket_origin = "trusted-zone")
-#formatted_zone.execute()
+trusted_zone = TrustedZone(supported_modals = SUPPORTED_MODALS, bucket_origin = "trusted-zone", bucket_destination="exploitation-zone")
+trusted_zone.execute()

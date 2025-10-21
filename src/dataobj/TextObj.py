@@ -47,3 +47,6 @@ class TextObj(ADataObj):
         self.text = self.text.strip()
         if not self.text.strip():
             print(f"Advertencia: {self.filename} quedó vacío después del procesamiento")
+
+    def trust(self):
+        pass
