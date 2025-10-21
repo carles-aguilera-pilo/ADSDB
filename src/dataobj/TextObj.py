@@ -3,10 +3,14 @@ import re
 import unicodedata
 from src.dataobj.ADataObj import ADataObj
 from src.minio_connection import MinIOConnection
+from src.chroma_connection import ChromaConnection
+from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 import os
 import io
 
 class TextObj(ADataObj):
+
+    _default_ef = DefaultEmbeddingFunction()
 
     def __init__(self, key, text_data):
         self.path_prefix = key.split("/")[0]
@@ -14,15 +18,27 @@ class TextObj(ADataObj):
         self.filename = split_filename[0]
         self.extension = split_filename[1].lower()
         self.text = text_data.decode("utf-8", errors="ignore")
+        self.embeddings = None
 
-    def save(self, bucket_destination):        
+    def save(self, bucket_destination, chromadb: bool=False):        
         buffer = io.BytesIO(self.text.encode('utf-8'))
 
         key = self.path_prefix + "/" + self.filename + self.extension
         minio_client = MinIOConnection()
         minio_client.upload_fileobj(Fileobj=buffer, Bucket=bucket_destination, Key=key)
-        minio_client.head_object(Bucket=bucket_destination, Key=key) # Checks if the file was uploaded successfully and throws an exception otherwise.
-   
+        minio_client.head_object(Bucket=bucket_destination, Key=key)
+        if chromadb:
+            chroma_client = ChromaConnection()
+            collection_name = self.extension + "_collection"
+            collection = chroma_client.get_or_create_collection(name=collection_name)
+            
+            collection.add(
+                documents=[self.text],
+                embeddings=[self.embeddings],
+                ids=[key]
+            )
+            
+
     def format(self):
         buffer = io.BytesIO(self.text.encode('utf-8'))
         self.extension = ".txt"
@@ -48,5 +64,7 @@ class TextObj(ADataObj):
         if not self.text.strip():
             print(f"Advertencia: {self.filename} quedó vacío después del procesamiento")
 
-    def trust(self):
-        pass
+    def embed(self):
+        self.embeddings = self._default_ef(self.text)
+
+

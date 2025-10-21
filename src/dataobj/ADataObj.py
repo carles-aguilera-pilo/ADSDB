@@ -12,3 +12,7 @@ class ADataObj(ABC):
     @abstractmethod    
     def clean(self):
         pass
+
+    @abstractmethod
+    def embed(self):
+        pass
