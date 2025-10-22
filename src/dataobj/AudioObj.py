@@ -11,12 +11,11 @@ import os
 import io
 
 TARGET_SAMPLE_RATE = 48000
+_model_id = "laion/clap-htsat-unfused"
+_model = ClapModel.from_pretrained(_model_id)
+_processor = ClapProcessor.from_pretrained(_model_id)
 
 class AudioObj(ADataObj):
-    _model_id = "laion/clap-htsat-unfused"
-    _model = ClapModel.from_pretrained(_model_id)
-    _processor = ClapProcessor.from_pretrained(_model_id)
-
     def __init__(self, key, audio_data):
         self.path_prefix = key.split("/")[0]
         split_filename = os.path.splitext(key.split("/")[1])
@@ -79,12 +78,12 @@ class AudioObj(ADataObj):
             sr=TARGET_SAMPLE_RATE, 
             mono=True
         )
-        inputs = self._processor(
+        inputs = _processor(
             audio=audio_waveform, 
             sampling_rate=TARGET_SAMPLE_RATE, 
             return_tensors="pt"
         )
         with torch.no_grad():
-            audio_features = self._model.get_audio_features(**inputs)
+            audio_features = _model.get_audio_features(**inputs)
 
         self.embeddings = audio_features[0].numpy().tolist()

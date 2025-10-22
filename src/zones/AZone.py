@@ -3,6 +3,7 @@ from src.minio_connection import MinIOConnection
 from src.dataobj.ImageObj import ImageObj
 from src.dataobj.AudioObj import AudioObj
 from src.dataobj.TextObj import TextObj
+from tqdm import tqdm
 
 class AZone(ABC):
 
@@ -25,8 +26,9 @@ class AZone(ABC):
 
         print(self.supported_modals)
         for modal in self.supported_modals:
+            print(f"Processing modal: {modal}")
             for page in paginator.paginate(Bucket=self.bucket_origin, Prefix=modal):
-                for obj in page.get("Contents",[]):
+                for obj in tqdm(page.get("Contents",[])):
                     key = obj["Key"]
                     response = minio_client.get_object(Bucket=self.bucket_origin, Key=key)
                     ###########################################

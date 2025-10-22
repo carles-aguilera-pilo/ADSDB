@@ -1,6 +1,12 @@
+from src.dataobj.TextObj import TextObj
+from src.dataobj.ImageObj import ImageObj
+from src.chroma_connection import ChromaConnection
+from src.minio_connection import MinIOConnection
+
 import streamlit as st
 from audiorecorder import audiorecorder
 import io
+from PIL import Image
 
 # --- Page Config ---
 st.set_page_config(
@@ -38,6 +44,28 @@ def get_mock_response(prompt, mode, data=None):
         else:
             return "🤖 I received your audio and am processing it. (Mock transcription: '...hello world...')"
 
+def getTextResponse(prompt):
+    o = TextObj("texts/dummy.txt", prompt.encode('utf-8'))
+    o.clean()
+    o.format()
+    o.embed()
+    response = ChromaConnection().query("txt_collection", [o.embeddings], n_results=1)
+    docs = response.get("documents")
+    if docs and len(docs) > 0 and len(docs[0]) > 0:
+        doc = docs[0][0]
+    return doc if docs else "I'm sorry, I don't have an answer for that."
+
+def getImageResponse(image_bytes):
+    o = ImageObj("images/dummy.png", image_bytes)
+    o.clean()
+    o.format()
+    o.embed()
+    response = ChromaConnection().query("png_collection", [o.embeddings], n_results=1)
+    response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=response["ids"][0][0])
+    matched_image_data = response["Body"].read()
+    matched_image = Image.open(io.BytesIO(matched_image_data)).convert('RGB')
+    return matched_image
+
 tab1, tab2, tab3 = st.tabs(["💬 Text Mode", "🖼️ Image Mode", "🎤 Audio Mode"])
 
 with tab1:
@@ -52,8 +80,8 @@ with tab1:
 
     if submitted and prompt:
         st.session_state.text_messages.append({"role": "user", "content": prompt})
-        
-        response = get_mock_response(prompt, "text")
+
+        response = getTextResponse(prompt)
         st.session_state.text_messages.append({"role": "assistant", "content": response})
         
         st.rerun()
@@ -79,8 +107,8 @@ with tab2:
             "role": "user",
             "image": image_bytes
         })
-        
-        response = get_mock_response(prompt=None, mode="image", data=image_bytes)
+
+        response = getImageResponse(image_bytes)
         st.session_state.image_messages.append({"role": "assistant", "content": response})
         st.rerun()
 

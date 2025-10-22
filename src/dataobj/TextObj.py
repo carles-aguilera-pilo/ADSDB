@@ -8,10 +8,9 @@ from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 import os
 import io
 
+_default_ef = DefaultEmbeddingFunction()
+
 class TextObj(ADataObj):
-
-    _default_ef = DefaultEmbeddingFunction()
-
     def __init__(self, key, text_data):
         self.path_prefix = key.split("/")[0]
         split_filename = os.path.splitext(key.split("/")[1])
@@ -29,7 +28,7 @@ class TextObj(ADataObj):
         minio_client.head_object(Bucket=bucket_destination, Key=key)
         if chromadb:
             chroma_client = ChromaConnection()
-            collection_name = self.extension + "_collection"
+            collection_name = self.extension[1:] + "_collection"
             collection = chroma_client.get_or_create_collection(name=collection_name)
             
             collection.add(
@@ -65,6 +64,6 @@ class TextObj(ADataObj):
             print(f"Advertencia: {self.filename} quedó vacío después del procesamiento")
 
     def embed(self):
-        self.embeddings = self._default_ef(self.text)
+        self.embeddings = _default_ef([self.text])[0]
 
 

@@ -7,10 +7,9 @@ from src.chroma_connection import ChromaConnection
 import os
 import io
 
+_model = SentenceTransformer('clip-ViT-B-32')
+
 class ImageObj(ADataObj):
-
-    _model = SentenceTransformer('clip-ViT-B-32')
-
     def __init__(self, key, image_data):
         self.path_prefix = key.split("/")[0]
         split_filename = os.path.splitext(key.split("/")[1])
@@ -59,4 +58,4 @@ class ImageObj(ADataObj):
         self.image = self.image.filter(ImageFilter.SHARPEN)
 
     def embed(self):
-        self.embeddings = self._model.encode([self.image])[0]
+        self.embeddings = _model.encode([self.image])[0]
