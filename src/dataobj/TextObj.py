@@ -20,7 +20,7 @@ class TextObj(ADataObj):
         split_filename = os.path.splitext(key.split("/")[1])
         self.filename = split_filename[0]
         self.extension = split_filename[1].lower()
-        self.extension_multimodal = "multimodal"
+        self.extension_multimodal = "multimodal_collection_text"
         self.text = text_data.decode("utf-8", errors="ignore")
         self.embeddings = None
         self.multimodal_embeddings = None
@@ -44,12 +44,11 @@ class TextObj(ADataObj):
             )
             
             # FOR THE TASK 2
-            collection_name_multimodal = self.extension_multimodal + "_collection"
-            collection_multimodal = chroma_client.get_or_create_collection(name=collection_name_multimodal)
+            collection_multimodal = chroma_client.get_or_create_collection(name=self.extension_multimodal)
             collection_multimodal.add(
-                documents=[self.text],
+                ids=[key],
                 embeddings=[self.multimodal_embeddings],
-                ids=[key]
+                metadatas=[{"bucket": bucket_destination, "key": key, "type": "text"}]
             )
 
     def format(self):
@@ -81,11 +80,10 @@ class TextObj(ADataObj):
         self.embeddings = _default_ef([self.text])[0]
         
     def multimodal_embed(self):
-        embedd = embedding_function._embed_text(self.text)
-        if hasattr(embedd, "shape") and len(getattr(embedd, "shape", [])) == 2:
-            embedd = embedd[0]
+        embedd = embedding_function([self.text])[0]
         if hasattr(embedd, "tolist"):
             embedd = embedd.tolist()
         self.multimodal_embeddings = embedd
+
 
 

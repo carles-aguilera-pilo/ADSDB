@@ -20,7 +20,7 @@ class ImageObj(ADataObj):
         split_filename = os.path.splitext(key.split("/")[1])
         self.filename = split_filename[0]
         self.extension = split_filename[1].lower()
-        self.extension_multimodal = "multimodal"
+        self.extension_multimodal = "multimodal_collection_images"
         self.image = Image.open(io.BytesIO(image_data))
         self.embeddings = None
         self.multimodal_embeddings = None
@@ -46,11 +46,11 @@ class ImageObj(ADataObj):
             )
             
             # FOR THE TASK 2
-            collection_name_multimodal = self.extension_multimodal + "_collection"
-            collection_multimodal = chroma_client.get_or_create_collection(name=collection_name_multimodal)
+            collection_multimodal = chroma_client.get_or_create_collection(name=self.extension_multimodal)
             collection_multimodal.add(
                 ids=[key],
                 embeddings=[self.multimodal_embeddings],
+                metadatas=[{"bucket": bucket_destination, "key": key, "type": "image"}]
             )
 
     def format(self):
@@ -78,10 +78,7 @@ class ImageObj(ADataObj):
         self.embeddings = _model.encode([self.image])[0]
     
     def multimodal_embed(self):
-        embedd = embedding_function._embed_image(self.image)
-        if hasattr(embedd, "shape") and len(getattr(embedd, "shape", [])) == 2:
-            embedd = embedd[0]
+        embedd = embedding_function([self.image])[0]
         if hasattr(embedd, "tolist"):
             embedd = embedd.tolist()
         self.multimodal_embeddings = embedd
-    
