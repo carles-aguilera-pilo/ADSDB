@@ -31,3 +31,4 @@ streamlit==1.50.0
 streamlit_audiorecorder==0.0.6
 torch==2.9.0
 accelerate==1.11.0
+google-genai==1.46.0
