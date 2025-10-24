@@ -79,7 +79,7 @@ class AudioObj(ADataObj):
             mono=True
         )
         inputs = _processor(
-            audio=audio_waveform, 
+            audio=[audio_waveform], 
             sampling_rate=TARGET_SAMPLE_RATE, 
             return_tensors="pt"
         )

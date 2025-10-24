@@ -24,9 +24,12 @@ class ChromaConnection:
         self._client = chromadb.HttpClient(host=chroma_host, port=chroma_port)
         self._initialized = True
 
+    def get_or_create_collection(self, name):
+        collection = self._client.get_or_create_collection(name=name)
+        return collection
 
     def query(self, collection_name, query_embeddings, n_results=5):
-        collection = self._client.get_or_create_collection(name=collection_name)
+        collection = self.get_or_create_collection(name=collection_name)
         results = collection.query(
             query_embeddings=query_embeddings,
             n_results=n_results
