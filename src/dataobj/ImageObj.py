@@ -6,8 +6,13 @@ from sentence_transformers import SentenceTransformer
 from src.chroma_connection import ChromaConnection
 import os
 import io
+import chromadb
+from chromadb.utils.data_loaders import ImageLoader
+from chromadb.utils.embedding_functions import OpenCLIPEmbeddingFunction
+
 
 _model = SentenceTransformer('clip-ViT-B-32')
+embedding_function = OpenCLIPEmbeddingFunction()
 
 class ImageObj(ADataObj):
     def __init__(self, key, image_data):
@@ -15,8 +20,10 @@ class ImageObj(ADataObj):
         split_filename = os.path.splitext(key.split("/")[1])
         self.filename = split_filename[0]
         self.extension = split_filename[1].lower()
+        self.extension_multimodal = "multimodal"
         self.image = Image.open(io.BytesIO(image_data))
         self.embeddings = None
+        self.multimodal_embeddings = None
 
     def save(self, bucket_destination, chromadb: bool=False):        
         buffer = io.BytesIO()
@@ -28,6 +35,8 @@ class ImageObj(ADataObj):
         minio_client.upload_fileobj(Fileobj=buffer, Bucket=bucket_destination, Key=key)
         minio_client.head_object(Bucket=bucket_destination, Key=key)
         if chromadb:
+            
+            # FOR THE TASK 1
             chroma_client = ChromaConnection()
             collection_name = self.extension[1:] + "_collection"
             collection = chroma_client.get_or_create_collection(name=collection_name)
@@ -35,7 +44,15 @@ class ImageObj(ADataObj):
                 ids=[key],
                 embeddings=[self.embeddings],
             )
-   
+            
+            # FOR THE TASK 2
+            collection_name_multimodal = self.extension_multimodal + "_collection"
+            collection_multimodal = chroma_client.get_or_create_collection(name=collection_name_multimodal)
+            collection_multimodal.add(
+                ids=[key],
+                embeddings=[self.multimodal_embeddings],
+            )
+
     def format(self):
         buffer = io.BytesIO()
         self.image.save(buffer, format="PNG")
@@ -59,3 +76,12 @@ class ImageObj(ADataObj):
 
     def embed(self):
         self.embeddings = _model.encode([self.image])[0]
+    
+    def multimodal_embed(self):
+        embedd = embedding_function._embed_image(self.image)
+        if hasattr(embedd, "shape") and len(getattr(embedd, "shape", [])) == 2:
+            embedd = embedd[0]
+        if hasattr(embedd, "tolist"):
+            embedd = embedd.tolist()
+        self.multimodal_embeddings = embedd
+    
