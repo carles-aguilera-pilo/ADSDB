@@ -1,16 +1,11 @@
-from abc import ABC, abstractmethod
 import re
 import unicodedata
 from src.dataobj.ADataObj import ADataObj
 from src.minio_connection import MinIOConnection
 from src.chroma_connection import ChromaConnection
-from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 import os
 import io
-from chromadb.utils.embedding_functions import OpenCLIPEmbeddingFunction
-
-_default_ef = DefaultEmbeddingFunction()
-embedding_function = OpenCLIPEmbeddingFunction()
+from imagebind import data
 
 class TextObj(ADataObj):
     def __init__(self, key, text_data):
@@ -23,7 +18,7 @@ class TextObj(ADataObj):
         self.embeddings = None
         self.multimodal_embeddings = None
 
-    def save(self, bucket_destination, chromadb: bool=False):        
+    def save(self, bucket_destination, chromadb: bool=False, collection_name: str=None):        
         buffer = io.BytesIO(self.text.encode('utf-8'))
 
         key = self.path_prefix + "/" + self.filename + self.extension
@@ -32,21 +27,12 @@ class TextObj(ADataObj):
         minio_client.head_object(Bucket=bucket_destination, Key=key)
         if chromadb:
             chroma_client = ChromaConnection()
-            collection_name = self.extension[1:] + "_collection"
             collection = chroma_client.get_or_create_collection(name=collection_name)
             
             collection.add(
                 documents=[self.text],
                 embeddings=[self.embeddings],
                 ids=[key]
-            )
-            
-            # FOR THE TASK 2
-            collection_multimodal = chroma_client.get_or_create_collection(name=self.extension_multimodal)
-            collection_multimodal.add(
-                ids=[key],
-                embeddings=[self.multimodal_embeddings],
-                metadatas=[{"bucket": bucket_destination, "key": key, "type": "text"}]
             )
 
     def format(self):
@@ -75,13 +61,8 @@ class TextObj(ADataObj):
             print(f"Advertencia: {self.filename} quedó vacío después del procesamiento")
 
     def embed(self):
-        self.embeddings = _default_ef([self.text])[0]
         
-    def multimodal_embed(self):
-        embedd = embedding_function([self.text])[0]
-        if hasattr(embedd, "tolist"):
-            embedd = embedd.tolist()
-        self.multimodal_embeddings = embedd
+
 
 
 
