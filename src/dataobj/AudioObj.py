@@ -21,9 +21,11 @@ class AudioObj(ADataObj):
         split_filename = os.path.splitext(key.split("/")[1])
         self.filename = split_filename[0]
         self.extension = split_filename[1].lower()
+        self.extension_multimodal = "multimodal_collection_audios"
         self.audio_bytes = audio_data
         self.audio = AudioSegment.from_file(io.BytesIO(audio_data))
         self.embeddings = None
+        self.multimodal_embeddings = None
 
     def save(self, bucket_destination, chromadb: bool=False):        
         buffer = io.BytesIO()
