@@ -7,8 +7,6 @@ from src.chroma_connection import ChromaConnection
 from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 import os
 import io
-import chromadb
-from chromadb.utils.data_loaders import TextLoader
 from chromadb.utils.embedding_functions import OpenCLIPEmbeddingFunction
 
 _default_ef = DefaultEmbeddingFunction()
