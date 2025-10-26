@@ -3,9 +3,9 @@ import unicodedata
 from src.dataobj.ADataObj import ADataObj
 from src.minio_connection import MinIOConnection
 from src.chroma_connection import ChromaConnection
+from src.embedder import embed_text
 import os
 import io
-from imagebind import data
 
 class TextObj(ADataObj):
     def __init__(self, key, text_data):
@@ -16,7 +16,6 @@ class TextObj(ADataObj):
         self.extension_multimodal = "multimodal_collection_text"
         self.text = text_data.decode("utf-8", errors="ignore")
         self.embeddings = None
-        self.multimodal_embeddings = None
 
     def save(self, bucket_destination, chromadb: bool=False, collection_name: str=None):        
         buffer = io.BytesIO(self.text.encode('utf-8'))
@@ -28,7 +27,6 @@ class TextObj(ADataObj):
         if chromadb:
             chroma_client = ChromaConnection()
             collection = chroma_client.get_or_create_collection(name=collection_name)
-            
             collection.add(
                 documents=[self.text],
                 embeddings=[self.embeddings],
@@ -61,8 +59,4 @@ class TextObj(ADataObj):
             print(f"Advertencia: {self.filename} quedó vacío después del procesamiento")
 
     def embed(self):
-        
-
-
-
-
+        self.embeddings = embed_text(self.text).cpu().squeeze().tolist()

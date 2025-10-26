@@ -8,7 +8,7 @@ class TrustedZone(AZone):
 
     def treatData(self, dataobj):
         dataobj.embed()
-        dataobj.save(self.bucket_destination, chromadb=True)
+        dataobj.save(self.bucket_destination, chromadb=True, collection_name="multimodal_collection")
 
 
     
