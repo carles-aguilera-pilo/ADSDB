@@ -59,4 +59,4 @@ class TextObj(ADataObj):
             print(f"Advertencia: {self.filename} quedó vacío después del procesamiento")
 
     def embed(self):
-        self.embeddings = embed_text(self.text).cpu().squeeze().tolist()
+        self.embeddings = embed_text(self.text)[0].cpu().squeeze().tolist()
