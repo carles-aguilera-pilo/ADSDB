@@ -27,6 +27,7 @@ class ImageObj(ADataObj):
         minio_client.head_object(Bucket=bucket_destination, Key=key)
         if chromadb:
             chroma_client = ChromaConnection()
+            collection_name = f"image_{collection_name}"
             collection = chroma_client.get_or_create_collection(name=collection_name)
             collection.add(
                 ids=[key],

@@ -13,7 +13,6 @@ class TextObj(ADataObj):
         split_filename = os.path.splitext(key.split("/")[1])
         self.filename = split_filename[0]
         self.extension = split_filename[1].lower()
-        self.extension_multimodal = "multimodal_collection_text"
         self.text = text_data.decode("utf-8", errors="ignore")
         self.embeddings = None
 
@@ -26,6 +25,7 @@ class TextObj(ADataObj):
         minio_client.head_object(Bucket=bucket_destination, Key=key)
         if chromadb:
             chroma_client = ChromaConnection()
+            collection_name = f"text_{collection_name}"
             collection = chroma_client.get_or_create_collection(name=collection_name)
             collection.add(
                 documents=[self.text],
