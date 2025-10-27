@@ -67,7 +67,7 @@ def getImageResponse(image_bytes):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("image_multimodal_collection", [o.embeddings], n_results=1)
+    response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=1)
     response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=response["ids"][0][0])
     matched_image_data = response["Body"].read()
     matched_image = Image.open(io.BytesIO(matched_image_data)).convert('RGB')
@@ -78,7 +78,7 @@ def getAudioResponse(audio_bytes):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("audio_multimodal_collection", [o.embeddings], n_results=1)
+    response = ChromaConnection().query("audio_multimodal_collection", o.embeddings, n_results=1)
     response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=response["ids"][0][0])
     matched_audio_data = response["Body"].read()
     return matched_audio_data

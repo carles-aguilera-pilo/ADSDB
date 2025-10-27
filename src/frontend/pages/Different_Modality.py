@@ -53,7 +53,7 @@ def getTextFromText(prompt):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("text_multimodal_collection", [o.embeddings], n_results=1)
+    response = ChromaConnection().query("text_multimodal_collection", o.embeddings, n_results=1)
     docs = response.get("documents")
     if docs and len(docs) > 0 and len(docs[0]) > 0:
         return docs[0][0]
@@ -65,7 +65,7 @@ def getImageFromText(prompt):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("image_multimodal_collection", [o.embeddings], n_results=1) # Query IMAGE collection
+    response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=1) # Query IMAGE collection
     if not response["ids"][0]:
         return "Sorry, I couldn't find a matching image."
     key = response["ids"][0][0]
@@ -79,7 +79,7 @@ def getAudioFromText(prompt):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("audio_multimodal_collection", [o.embeddings], n_results=1) # Query AUDIO collection
+    response = ChromaConnection().query("audio_multimodal_collection", o.embeddings, n_results=1) # Query AUDIO collection
     if not response["ids"][0]:
         return "Sorry, I couldn't find matching audio."
     key = response["ids"][0][0]
@@ -92,7 +92,7 @@ def getTextFromImage(image_bytes):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("text_multimodal_collection", [o.embeddings], n_results=1) # Query TEXT collection
+    response = ChromaConnection().query("text_multimodal_collection", o.embeddings, n_results=1) # Query TEXT collection
     docs = response.get("documents")
     if docs and len(docs) > 0 and len(docs[0]) > 0:
         return docs[0][0]
@@ -104,7 +104,7 @@ def getImageFromImage(image_bytes):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("image_multimodal_collection", [o.embeddings], n_results=1)
+    response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=1)
     if not response["ids"][0]:
         return "Sorry, I couldn't find a similar image."
     key = response["ids"][0][0]
@@ -118,7 +118,7 @@ def getAudioFromImage(image_bytes):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("audio_multimodal_collection", [o.embeddings], n_results=1) # Query AUDIO collection
+    response = ChromaConnection().query("audio_multimodal_collection", o.embeddings, n_results=1) # Query AUDIO collection
     if not response["ids"][0]:
         return "Sorry, I couldn't find matching audio for that image."
     key = response["ids"][0][0]
@@ -131,7 +131,7 @@ def getTextFromAudio(audio_bytes):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("text_multimodal_collection", [o.embeddings], n_results=1) # Query TEXT collection
+    response = ChromaConnection().query("text_multimodal_collection", o.embeddings, n_results=1) # Query TEXT collection
     docs = response.get("documents")
     if docs and len(docs) > 0 and len(docs[0]) > 0:
         return docs[0][0]
@@ -143,7 +143,7 @@ def getImageFromAudio(audio_bytes):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("image_multimodal_collection", [o.embeddings], n_results=1) # Query IMAGE collection
+    response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=1) # Query IMAGE collection
     if not response["ids"][0]:
         return "Sorry, I couldn't find a matching image for that audio."
     key = response["ids"][0][0]
@@ -157,7 +157,7 @@ def getAudioFromAudio(audio_bytes):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("audio_multimodal_collection", [o.embeddings], n_results=1)
+    response = ChromaConnection().query("audio_multimodal_collection", o.embeddings, n_results=1)
     if not response["ids"][0]:
         return "Sorry, I couldn't find similar audio."
     key = response["ids"][0][0]
