@@ -30,6 +30,8 @@ class ChromaConnection:
 
     def query(self, collection_name, query_embeddings, n_results=5):
         collection = self.get_or_create_collection(name=collection_name)
+        print("Embeddings for query:")
+        print(query_embeddings)
         results = collection.query(
             query_embeddings=query_embeddings,
             n_results=n_results

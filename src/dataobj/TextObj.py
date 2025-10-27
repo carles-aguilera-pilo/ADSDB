@@ -13,50 +13,74 @@ class TextObj(ADataObj):
         split_filename = os.path.splitext(key.split("/")[1])
         self.filename = split_filename[0]
         self.extension = split_filename[1].lower()
-        self.text = text_data.decode("utf-8", errors="ignore")
-        self.embeddings = None
+        self.texts = [text_data.decode("utf-8", errors="ignore")]
+        self.embeddings = []
 
     def save(self, bucket_destination, chromadb: bool=False, collection_name: str=None):        
-        buffer = io.BytesIO(self.text.encode('utf-8'))
-
-        key = self.path_prefix + "/" + self.filename + self.extension
-        minio_client = MinIOConnection()
-        minio_client.upload_fileobj(Fileobj=buffer, Bucket=bucket_destination, Key=key)
-        minio_client.head_object(Bucket=bucket_destination, Key=key)
-        if chromadb:
-            chroma_client = ChromaConnection()
-            collection_name = f"text_{collection_name}"
-            collection = chroma_client.get_or_create_collection(name=collection_name)
-            collection.add(
-                documents=[self.text],
-                embeddings=[self.embeddings],
-                ids=[key]
-            )
+        for i, text in enumerate(self.texts):
+            buffer = io.BytesIO(text.encode('utf-8'))
+            print(f"Embeddings: {self.embeddings}")
+            key = self.path_prefix + "/" + self.filename + f"_{i}" + self.extension
+            minio_client = MinIOConnection()
+            minio_client.upload_fileobj(Fileobj=buffer, Bucket=bucket_destination, Key=key)
+            minio_client.head_object(Bucket=bucket_destination, Key=key)
+        
+            if chromadb:
+                chroma_client = ChromaConnection()
+                collection_str = f"text_{collection_name}"
+                collection = chroma_client.get_or_create_collection(name=collection_str)
+                collection.add(
+                    documents=[text],
+                    embeddings=[self.embeddings[i]],
+                    ids=[key]
+                )
 
     def format(self):
-        buffer = io.BytesIO(self.text.encode('utf-8'))
-        self.extension = ".txt"
+        for text in self.texts:
+            buffer = io.BytesIO(text.encode('utf-8'))
+            self.extension = ".txt"
 
     def clean(self):
-        self.text = unicodedata.normalize('NFKD', self.text)
-        self.text = ''.join(char for char in self.text if unicodedata.category(char)[0] != 'C' or char in '\n\t')
-        self.text = re.sub(r"[ \t]+", " ", self.text)          # Espacios y tabs múltiples → un espacio
-        self.text = re.sub(r"\s+", " ", self.text)
-        self.text = re.sub(r"\n\s*\n\s*\n+", "\n\n", self.text) # Múltiples líneas vacías → máximo 2
-        lines = self.text.split('\n')
-        lines = [line.strip() for line in lines]
-        self.text = '\n'.join(lines)
-        self.text = re.sub(r'\n\s*\n+', '\n\n', self.text)
-        lines = [line for line in lines if line.strip()]  # Eliminar líneas vacías del medio también
-        self.text = re.sub(r'[^\w\s\.\,\;\:\!\?\(\)\[\]\"\'\-\+\=\%\&\$\/\@\#\*]', '', self.text)
-        self.text = re.sub(r'["""]', '"', self.text)      # Comillas tipográficas → comillas normales
-        self.text = re.sub(r"[‘’]", "'", self.text)     # Apostrofes tipográficos → apostrofes normales
-        self.text = re.sub(r'-{2,}', '-', self.text)      # Múltiples guiones → un guión
-        self.text = re.sub(r'\s+([.!?;:])', r'\1', self.text)  # Eliminar espacios antes de puntuación
-        self.text = re.sub(r'([.!?;:])\s*', r'\1 ', self.text) # Un espacio después de puntuación
-        self.text = self.text.strip()
-        if not self.text.strip():
-            print(f"Advertencia: {self.filename} quedó vacío después del procesamiento")
+        # If we have any problem, check
+        for i, text in enumerate(self.texts):
+            text = unicodedata.normalize('NFKD', text)
+            text = ''.join(char for char in text if unicodedata.category(char)[0] != 'C' or char in '\n\t')
+            text = re.sub(r"[ \t]+", " ", text)          # Espacios y tabs múltiples → un espacio
+            text = re.sub(r"\s+", " ", text)
+            text = re.sub(r"\n\s*\n\s*\n+", "\n\n", text) # Múltiples líneas vacías → máximo 2
+            lines = text.split('\n')
+            lines = [line.strip() for line in lines]
+            text = '\n'.join(lines)
+            text = re.sub(r'\n\s*\n+', '\n\n', text)
+            lines = [line for line in lines if line.strip()]  # Eliminar líneas vacías del medio también
+            text = re.sub(r'[^\w\s\.\,\;\:\!\?\(\)\[\]\"\'\-\+\=\%\&\$\/\@\#\*]', '', text)
+            text = re.sub(r'["""]', '"', text)      # Comillas tipográficas → comillas normales
+            text = re.sub(r"[‘’]", "'", text)     # Apostrofes tipográficos → apostrofes normales
+            text = re.sub(r'-{2,}', '-', text)      # Múltiples guiones → un guión
+            text = re.sub(r'\s+([.!?;:])', r'\1', text)  # Eliminar espacios antes de puntuación
+            text = re.sub(r'([.!?;:])\s*', r'\1 ', text) # Un espacio después de puntuación
+            text = text.strip()
+            if not text:
+                print(f"Advertencia: {self.filename} quedó vacío después del procesamiento")
+            
+            self.texts[i] = text
+
 
     def embed(self):
-        self.embeddings = embed_text(self.text)[0].cpu().squeeze().tolist()
+        for _, text in enumerate(self.texts):
+            parts = self.partition_text(text)
+            self.texts = parts
+            for _, part in enumerate(parts):
+                embedding = embed_text(part).cpu().squeeze().tolist()
+                self.embeddings.append(embedding)
+
+    def partition_text(self, text):
+        parts = text.split('.')
+        valid_phrases = []
+        for phrase in parts:
+            clean_phrase = phrase.strip()
+            if clean_phrase:
+                final_phrase = clean_phrase + "."
+                if len(final_phrase) <= 100:
+                    valid_phrases.append(final_phrase)
+        return valid_phrases

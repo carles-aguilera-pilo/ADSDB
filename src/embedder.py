@@ -49,16 +49,20 @@ def embed_image(img):
 
 def embed_text(text):
     try:
+        text = text[0:100]
+        print(f"Embedding text: {text}")
         inputs = {
             ModalityType.TEXT: data.load_and_transform_text([text], device),
         }
+        print(f"inputs: {inputs}")
 
         with torch.no_grad():
             embeddings = model(inputs)
-        
-        print(embeddings)
 
-        text_vector = embeddings[ModalityType.TEXT].squeeze(0)
+        print(f"embeddings: {embeddings}")
+
+        text_vector = embeddings[ModalityType.TEXT]
+        print(f"text_vector: {type(text_vector)} {text_vector.shape} {text_vector}")
         return text_vector
     except Exception as e:
         print(f"Error processing text: {e}")

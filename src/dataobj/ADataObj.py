@@ -14,5 +14,5 @@ class ADataObj(ABC):
         pass
 
     @abstractmethod
-    def embed(self):
+    def embed(self, bucket_destination):
         pass

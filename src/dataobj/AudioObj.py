@@ -68,5 +68,5 @@ class AudioObj(ADataObj):
         self.audio = normalize(self.audio)
         self.audio = self.audio + 2
     
-    def embed(self):
+    def embed(self, bucket_destination):
         self.embeddings = embed_audio(self.audio_bytes).cpu().tolist()

@@ -50,7 +50,13 @@ def getTextResponse(prompt):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("text_multimodal_collection", [o.embeddings], n_results=1)
+    #print(type(o.embeddings))
+    #print(o.embeddings)
+    #print(type([o.embeddings]))
+    #print([o.embeddings])
+    response = ChromaConnection().query("text_multimodal_collection", query_embeddings=o.embeddings, n_results=1)
+    print(response)
+    print(response.get("distances"))
     docs = response.get("documents")
     if docs and len(docs) > 0 and len(docs[0]) > 0:
         doc = docs[0][0]
