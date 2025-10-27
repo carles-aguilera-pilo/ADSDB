@@ -34,12 +34,10 @@ class AZone(ABC):
                     ###########################################
                     # Apply factory pattern
                     o = None
-                    """"
                     if modal == "images":
                         o = ImageObj(key, response["Body"].read())
                         self.treatData(o)
-                    """
-                    if modal == "audios":
+                    elif modal == "audios":
                         o = AudioObj(key, response["Body"].read())
                         self.treatData(o)
                     elif modal == "texts":
