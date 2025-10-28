@@ -70,26 +70,35 @@ def getTextResponse(prompt, k=10):
     print(result)
     return result if docs else "I'm sorry, I don't have an answer for that."
 
-def getImageResponse(image_bytes, k=1):
+def getImageResponse(image_bytes, k=10):
     o = ImageObj("images/dummy.png", image_bytes)
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=1)
-    response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=response["ids"][0][0])
-    matched_image_data = response["Body"].read()
-    matched_image = Image.open(io.BytesIO(matched_image_data)).convert('RGB')
-    return matched_image
+    print(k)
+    response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=k)
+    keys = response.get("ids")
+    images = []
+    for i in range(k):
+        response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=keys[0][i])
+        matched_image_data = response["Body"].read()
+        matched_image = Image.open(io.BytesIO(matched_image_data)).convert('RGB')
+        images.append(matched_image)
+    return images
 
-def getAudioResponse(audio_bytes):
+def getAudioResponse(audio_bytes, k=10):
     o = AudioObj("audios/dummy.wav", audio_bytes)
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("audio_multimodal_collection", o.embeddings, n_results=1)
-    response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=response["ids"][0][0])
-    matched_audio_data = response["Body"].read()
-    return matched_audio_data
+    response = ChromaConnection().query("audio_multimodal_collection", o.embeddings, n_results=k)
+    keys = response.get("ids")
+    audios = []
+    for i in range(k):
+        response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=keys[0][i])
+        matched_audio_data = response["Body"].read()
+        audios.append(matched_audio_data)
+    return audios
 
 
 tab1, tab2, tab3 = st.tabs(["💬 Text Mode", "🖼️ Image Mode", "🎤 Audio Mode"])
@@ -135,7 +144,8 @@ with tab2:
         })
 
         response = getImageResponse(image_bytes, k=k_image)
-        st.session_state.image_messages.append({"role": "assistant", "content": response})
+        for img in response:
+            st.session_state.image_messages.append({"role": "assistant", "image": img})
         st.rerun()
 
 with tab3:
@@ -171,10 +181,11 @@ with tab3:
 
         response = getAudioResponse(buffer.getvalue(), k=k_audio)
 
-        st.session_state.audio_messages.append({
-            "role": "assistant", 
-            "audio": response
-        })
+        for audio_data in response:
+            st.session_state.audio_messages.append({
+                "role": "assistant", 
+                "audio": audio_data
+            })
         
         st.rerun()
         
