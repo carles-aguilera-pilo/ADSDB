@@ -9,6 +9,7 @@ model = imagebind_huge(pretrained=True)
 model.eval()
 model.to(device)
 
+# TODO: Change this to bytes
 def embed_image(minio_key):
     try:
         response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=minio_key)

@@ -1,12 +1,19 @@
 import os
 from dotenv import load_dotenv
-from src.dataobj.TextObj import TextObj
-from src.dataobj.ImageObj import ImageObj
-from src.dataobj.AudioObj import AudioObj
-from src.chroma_connection import ChromaConnection
 from src.llm.GeminiModel import GeminiModel
-from src.minio_connection import MinIOConnection
-from src.frontend.pages.Different_Modality import getTextFromText, getImageFromImage, getTextFromImage, getImageFromText
+# These functions are now imported from your helpers file
+from src.frontend.helpers.transformObjects import (
+    display_chat_message, 
+    getTextFromText, 
+    getImageFromText, 
+    getAudioFromText, 
+    getImageFromImage, 
+    getTextFromImage, 
+    getAudioFromImage, 
+    getAudioFromAudio, 
+    getTextFromAudio, 
+    getImageFromAudio
+)
 
 import streamlit as st
 from audiorecorder import audiorecorder
@@ -15,219 +22,138 @@ from PIL import Image
 
 # --- Page Config ---
 st.set_page_config(
-    page_title="Multi-Modal Chatbot",  # Updated title
+    page_title="Rag Chatbot",
     page_icon="🤖",
     layout="wide"
 )
 
-st.title("Multi-Modal Chatbot 💬🖼️🎤")
-st.caption("Interact across different modalities: Text, Image, and Audio.")
+st.title("Rag Chatbot 💬🖼️🎤")
+st.caption("A unified chat experience. You can send text, an image, or both!")
 
 # --- Session State Initialization ---
-if "text_messages" not in st.session_state:
-    st.session_state.text_messages = []
-if "image_messages" not in st.session_state:
-    st.session_state.image_messages = []
-if "audio_messages" not in st.session_state:
-    st.session_state.audio_messages = []
+# Use a single, unified message list
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 if "last_processed_audio" not in st.session_state:
     st.session_state.last_processed_audio = None
 
-# --- Helper Function to Display All Message Types ---
-def display_chat_message(msg):
-    """Generic function to display a message, handling any data type."""
-    with st.chat_message(msg["role"]):
-        if "content" in msg:  # Text content
-            st.write(msg["content"])
-        if "image" in msg:  # Image content
-            # Handle both PIL Image objects and raw bytes
-            img_data = msg["image"]
-            if isinstance(img_data, bytes):
-                st.image(io.BytesIO(img_data), width=300)
-            else:
-                st.image(img_data, width=300)
-        if "audio" in msg:  # Audio content
-            st.audio(msg["audio"])
-
-# --- Response Functions (9 Combinations) ---
-
-# Perform rag
-
+# --- RAG Function (Kept from your original script) ---
 def rag(user_text, user_image):
-    retrieved_texts = getTextFromText(user_text) # Related text from text
-    retrieved_images = [getImageFromText(user_text)] # Related images from text 
+    """
+    Performs RAG using text and an optional image.
+    user_image is expected to be bytes or "".
+    """
+    if not user_text:
+        user_text = "Describe this image"
 
-    images_prompt = f""
-    if user_image != "":
-        retrieved_texts += getTextFromImage(user_image) # Related text from image
+    retrieved_texts = getTextFromText(user_text)
+    retrieved_images = [getImageFromText(user_text)]
+
+    images_prompt = ""
+    retrieved_images_paths = []
+
+    if user_image:
+        retrieved_texts += getTextFromImage(user_image)
         images_prompt = f"The user also provided an image, which corresponds to the last of the following sequence" 
-        retrieved_images += [getImageFromImage(user_image)] # Related image from image
+        retrieved_images += [getImageFromImage(user_image)]
         retrieved_images.append(Image.open(io.BytesIO(user_image)))
         
-    retrieved_images_paths = []
     for i, image in enumerate(retrieved_images):
-        image.save(f"/tmp/{i}") # type: ignore
+        if isinstance(image, Image.Image):
+            path = f"/tmp/image_{i}.png"
+            image.save(path)
+            retrieved_images_paths.append(path)
         
     final_prompt = f"You are a medical expert on skin cancers. A user asked the following question: {user_text}.{images_prompt}. Here is some useful information about it:{retrieved_texts}" 
-    
+    print(final_prompt)
     load_dotenv()
     api_key = os.getenv("GEMINI_API_KEY")
     gm = GeminiModel(api_key, "gemini-2.5-flash")
     return gm.query(final_prompt, retrieved_images_paths)
 
 
-# --- Streamlit Tabs ---
+# --- Main Chat Interface ---
 
-tab1, tab2, tab3 = st.tabs(["💬 Text Input", "🖼️ Image Input", "🎤 Audio Input"])
+# 1. Display all past messages
+for msg in st.session_state.messages:
+    display_chat_message(msg) # Use the imported helper function
 
-with tab1:
-    st.header("Chat with Text")
+# 2. Handle Audio Input (Audio-recorder triggers on its own)
+st.header("🎤 Speak to Chat")
+st.info("Click to record, stop to send. Your audio will be transcribed and used as a prompt.")
+
+audio_segment = audiorecorder(
+    show_visualizer=True,
+    key="audiorecorder"
+)
+
+buffer = io.BytesIO()
+if audio_segment.duration_seconds > 0: # Check if there is audio
+    audio_segment.export(buffer, format="wav")
+
+if (
+    isinstance(buffer.getvalue(), bytes)
+    and len(buffer.getvalue()) > 100 # Ensure it's not just an empty header
+    and buffer.getvalue() != st.session_state.last_processed_audio
+):
+    st.session_state.last_processed_audio = buffer.getvalue()
+    audio_bytes = buffer.getvalue()
     
-    # Display chat history
-    for msg in st.session_state.text_messages:
-        display_chat_message(msg)  # Use the new helper
+    # Add user's audio to chat
+    st.session_state.messages.append({
+        "role": "user", 
+        "audio": audio_bytes
+    })
 
-    # Output selection
-    output_mode_text = st.radio(
-        "What do you want to get back?",
-        ("Text", "Image", "Audio"),
-        key="text_output_mode",
-        horizontal=True
-    )
-
-    with st.form(key="text_form", clear_on_submit=True):
-        prompt = st.text_input("What's on your mind?", key="text_prompt")
-        submitted = st.form_submit_button("Send")
-
-    if submitted and prompt:
-        # Add user message
-        st.session_state.text_messages.append({"role": "user", "content": prompt})
-
-        # Get response based on selected mode
-        if output_mode_text == "Text":
-            response = getTextFromText(prompt)
-            st.session_state.text_messages.append({"role": "assistant", "content": response})
+    # --- Process Audio ---
+    # In a unified chat, the most common action is to transcribe audio to text
+    # and then use that text as the prompt.
+    with st.spinner("Transcribing audio and thinking..."):
+        transcribed_text = getTextFromAudio(audio_bytes)
         
-        elif output_mode_text == "Image":
-            response = getImageFromText(prompt)
-            if isinstance(response, Image.Image):
-                st.session_state.text_messages.append({"role": "assistant", "image": response})
-            else: # Handle error string
-                st.session_state.text_messages.append({"role": "assistant", "content": response})
-        
-        elif output_mode_text == "Audio":
-            response = getAudioFromText(prompt)
-            if isinstance(response, bytes):
-                st.session_state.text_messages.append({"role": "assistant", "audio": response})
-            else: # Handle error string
-                st.session_state.text_messages.append({"role": "assistant", "content": response})
-        
-        st.rerun()
-
-with tab2:
-    st.header("Chat with Images")
-
-    # Display chat history
-    for msg in st.session_state.image_messages:
-        display_chat_message(msg)  # Use the new helper
-
-    # Output selection
-    output_mode_image = st.radio(
-        "What do you want to get back?",
-        ("Image", "Text", "Audio"), # Reordered to make same-modality first
-        key="image_output_mode",
-        horizontal=True
-    )
-
-    with st.form(key="image_form", clear_on_submit=True):
-        uploaded_image = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
-        submitted = st.form_submit_button("Send")
-
-    if submitted and uploaded_image is not None:
-        image_bytes = uploaded_image.read()
-        
-        # Add user message
-        st.session_state.image_messages.append({
-            "role": "user",
-            "image": image_bytes # Display the uploaded image
-        })
-
-        # Get response based on selected mode
-        if output_mode_image == "Image":
-            response = getImageFromImage(image_bytes)
-            if isinstance(response, Image.Image):
-                st.session_state.image_messages.append({"role": "assistant", "image": response})
-            else:
-                st.session_state.image_messages.append({"role": "assistant", "content": response})
-        
-        elif output_mode_image == "Text":
-            response = getTextFromImage(image_bytes)
-            st.session_state.image_messages.append({"role": "assistant", "content": response})
-        
-        elif output_mode_image == "Audio":
-            response = getAudioFromImage(image_bytes)
-            if isinstance(response, bytes):
-                st.session_state.image_messages.append({"role": "assistant", "audio": response})
-            else:
-                st.session_state.image_messages.append({"role": "assistant", "content": response})
-        
-        st.rerun()
-
-with tab3:
-    st.header("Chat with Audio")
-    st.info("Select your desired output, then click to record. Stop to send. (Check browser permissions 🔒)")
-
-    # Display chat history
-    for msg in st.session_state.audio_messages:
-        display_chat_message(msg)  # Use the new helper
-    
-    # Output selection
-    output_mode_audio = st.radio(
-        "What do you want to get back?",
-        ("Audio", "Text", "Image"), # Reordered
-        key="audio_output_mode",
-        horizontal=True
-    )
-
-    audio_segment = audiorecorder(
-        show_visualizer=True,
-        key="audiorecorder"
-    )
-
-    buffer = io.BytesIO()
-    if audio_segment.duration_seconds > 0: # Check if there is audio
-        audio_segment.export(buffer, format="wav")
-
-    if (
-        isinstance(buffer.getvalue(), bytes)
-        and len(buffer.getvalue()) > 100 # Ensure it's not just an empty header
-        and buffer.getvalue() != st.session_state.last_processed_audio
-    ):
-        st.session_state.last_processed_audio = buffer.getvalue()
-        
-        # Add user message
-        st.session_state.audio_messages.append({
+        # (Optional) Display transcription to user
+        st.session_state.messages.append({
             "role": "user", 
-            "audio": buffer.getvalue()
+            "content": f"*(Audio transcribed: {transcribed_text})*"
         })
-
-        # Get response based on mode selected at time of recording
-        if output_mode_audio == "Audio":
-            response = getAudioFromAudio(buffer.getvalue())
-            if isinstance(response, bytes):
-                st.session_state.audio_messages.append({"role": "assistant", "audio": response})
-            else:
-                st.session_state.audio_messages.append({"role": "assistant", "content": response})
         
-        elif output_mode_audio == "Text":
-            response = getTextFromAudio(buffer.getvalue())
-            st.session_state.audio_messages.append({"role": "assistant", "content": response})
+        # Use the transcribed text to call the RAG function (without an image)
+        response = rag(user_text=transcribed_text, user_image="")
         
-        elif output_mode_audio == "Image":
-            response = getImageFromAudio(buffer.getvalue())
-            if isinstance(response, Image.Image):
-                st.session_state.audio_messages.append({"role": "assistant", "image": response})
-            else:
-                st.session_state.audio_messages.append({"role": "assistant", "content": response})
-        
+        st.session_state.messages.append({"role": "assistant", "content": response})
         st.rerun()
+
+# 3. Handle Text and Image Input (Using a form)
+st.header("💬 Type and/or Upload 🖼️")
+
+with st.form(key="main_chat_form", clear_on_submit=True):
+    prompt = st.text_input("What's on your mind?", key="text_prompt")
+    uploaded_image = st.file_uploader(
+        "Upload an image (optional)", 
+        type=["png", "jpg", "jpeg"]
+    )
+    submitted = st.form_submit_button("Send")
+
+if submitted:
+    # We must have at least a prompt or an image
+    if not prompt and not uploaded_image:
+        st.warning("Please enter a prompt or upload an image.")
+    else:
+        user_image_bytes = None
+        user_message = {"role": "user"}
+        
+        if prompt:
+            user_message["content"] = prompt
+            
+        if uploaded_image:
+            user_image_bytes = uploaded_image.read()
+            user_message["image"] = user_image_bytes
+
+        # Add the combined user message to the chat
+        st.session_state.messages.append(user_message)
+
+        # Call the RAG function with both text and image (image can be None)
+        with st.spinner("Thinking..."):
+            response = rag(user_text=prompt, user_image=user_image_bytes)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            st.rerun()
