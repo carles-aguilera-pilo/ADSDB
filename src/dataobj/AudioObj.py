@@ -2,18 +2,13 @@ from src.dataobj.ADataObj import ADataObj
 from pydub import AudioSegment
 from pydub.effects import normalize, compress_dynamic_range
 from pydub.silence import detect_silence
-from transformers import ClapModel, ClapProcessor
 from src.minio_connection import MinIOConnection
 from src.chroma_connection import ChromaConnection
-import librosa
-import torch
+from src.embedder import embed_audio
 import os
 import io
 
 TARGET_SAMPLE_RATE = 48000
-_model_id = "laion/clap-htsat-unfused"
-_model = ClapModel.from_pretrained(_model_id)
-_processor = ClapProcessor.from_pretrained(_model_id)
 
 class AudioObj(ADataObj):
     def __init__(self, key, audio_data):
@@ -25,9 +20,8 @@ class AudioObj(ADataObj):
         self.audio_bytes = audio_data
         self.audio = AudioSegment.from_file(io.BytesIO(audio_data))
         self.embeddings = None
-        self.multimodal_embeddings = None
 
-    def save(self, bucket_destination, chromadb: bool=False):        
+    def save(self, bucket_destination, chromadb: bool=False, collection_name: str=None):        
         buffer = io.BytesIO()
         self.audio.export(buffer, format=self.extension[1:])
         buffer.seek(0)
@@ -38,7 +32,7 @@ class AudioObj(ADataObj):
         minio_client.head_object(Bucket=bucket_destination, Key=key)
         if chromadb:
             chroma_client = ChromaConnection()
-            collection_name = self.extension[1:] + "_collection"
+            collection_name = f"audio_{collection_name}"
             collection = chroma_client.get_or_create_collection(name=collection_name)
             collection.add(
                 ids=[key],
@@ -75,17 +69,4 @@ class AudioObj(ADataObj):
         self.audio = self.audio + 2
     
     def embed(self):
-        audio_waveform, _ = librosa.load(
-            io.BytesIO(self.audio_bytes), 
-            sr=TARGET_SAMPLE_RATE, 
-            mono=True
-        )
-        inputs = _processor(
-            audio=[audio_waveform], 
-            sampling_rate=TARGET_SAMPLE_RATE, 
-            return_tensors="pt"
-        )
-        with torch.no_grad():
-            audio_features = _model.get_audio_features(**inputs)
-
-        self.embeddings = audio_features[0].numpy().tolist()
+        self.embeddings = embed_audio(self.audio_bytes).cpu().tolist()

@@ -5,7 +5,7 @@ services:
     image: quay.io/minio/minio
     ports:
       - ${S3_API_ENDPOINT}:9000 # MinIO Api 
-      - 127.0.0.1:9001:9001 # MinIO Console
+      - ${S3_CONSOLE_ENDPOINT}:9001 # MinIO Console
     command: server /data --console-address=":9001"
     environment:
       MINIO_ROOT_USER: ${ACCESS_KEY_ID}

@@ -1,6 +1,28 @@
 # ADSDB
 Project for the course *Algorithms, Data Structures and Databases* (ADSDB) of the Master's Degree in Data Science (MDS) taught at UPC.
 
+## Dependencies
+Before we fix it up, this project requires some dependencies to have been installed
+
+### Python dependencies
+To install python libraries, execute:
+```sh
+pip install -r requirements.txt
+```
+And to install the model for Audio generation in the data collection phase:
+To install the model, you must execute this command:
+```sh
+python3 -m piper.download_voices en_US-lessac-medium
+```
+
+### Ffmpeg
+Audio objects are processed using pydub library, which depends on having ffmpeg installed. To do so, execute:
+```sh
+sudo apt-get install ffmpeg libavcodec-extra
+```
+### 
+
+
 ## MinIO Setup
 To deploy MinIO with Docker Compose it is needed to:
 1. Verify that Docker and Docker Compose are installed.

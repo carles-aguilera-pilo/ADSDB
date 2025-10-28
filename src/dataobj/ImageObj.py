@@ -1,18 +1,10 @@
-from abc import ABC, abstractmethod
 from src.dataobj.ADataObj import ADataObj
 from PIL import Image, ImageEnhance, ImageFilter
 from src.minio_connection import MinIOConnection
-from sentence_transformers import SentenceTransformer
 from src.chroma_connection import ChromaConnection
 import os
 import io
-import chromadb
-from chromadb.utils.data_loaders import ImageLoader
-from chromadb.utils.embedding_functions import OpenCLIPEmbeddingFunction
-
-
-_model = SentenceTransformer('clip-ViT-B-32')
-embedding_function = OpenCLIPEmbeddingFunction()
+from src.embedder import embed_image
 
 class ImageObj(ADataObj):
     def __init__(self, key, image_data):
@@ -23,9 +15,8 @@ class ImageObj(ADataObj):
         self.extension_multimodal = "multimodal_collection_images"
         self.image = Image.open(io.BytesIO(image_data))
         self.embeddings = None
-        self.multimodal_embeddings = None
 
-    def save(self, bucket_destination, chromadb: bool=False):        
+    def save(self, bucket_destination, chromadb: bool=False, collection_name: str=None):        
         buffer = io.BytesIO()
         self.image.save(buffer, format=self.extension[1:])
         buffer.seek(0)
@@ -35,22 +26,12 @@ class ImageObj(ADataObj):
         minio_client.upload_fileobj(Fileobj=buffer, Bucket=bucket_destination, Key=key)
         minio_client.head_object(Bucket=bucket_destination, Key=key)
         if chromadb:
-            
-            # FOR THE TASK 1
             chroma_client = ChromaConnection()
-            collection_name = self.extension[1:] + "_collection"
+            collection_name = f"image_{collection_name}"
             collection = chroma_client.get_or_create_collection(name=collection_name)
             collection.add(
                 ids=[key],
                 embeddings=[self.embeddings],
-            )
-            
-            # FOR THE TASK 2
-            collection_multimodal = chroma_client.get_or_create_collection(name=self.extension_multimodal)
-            collection_multimodal.add(
-                ids=[key],
-                embeddings=[self.multimodal_embeddings],
-                metadatas=[{"bucket": bucket_destination, "key": key, "type": "image"}]
             )
 
     def format(self):
@@ -75,10 +56,4 @@ class ImageObj(ADataObj):
         self.image = self.image.filter(ImageFilter.SHARPEN)
 
     def embed(self):
-        self.embeddings = _model.encode([self.image])[0]
-    
-    def multimodal_embed(self):
-        embedd = embedding_function([self.image])[0]
-        if hasattr(embedd, "tolist"):
-            embedd = embedd.tolist()
-        self.multimodal_embeddings = embedd
+        self.embeddings = embed_image(self.image).cpu().tolist()

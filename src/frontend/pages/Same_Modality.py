@@ -50,18 +50,25 @@ def getTextResponse(prompt):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("txt_collection", [o.embeddings], n_results=1)
+    #print(type(o.embeddings))
+    #print(o.embeddings)
+    #print(type([o.embeddings]))
+    #print([o.embeddings])
+    response = ChromaConnection().query("text_multimodal_collection", query_embeddings=o.embeddings, n_results=10)
     docs = response.get("documents")
+    print(docs)
+    result = ""
     if docs and len(docs) > 0 and len(docs[0]) > 0:
-        doc = docs[0][0]
-    return doc if docs else "I'm sorry, I don't have an answer for that."
+        result = " ".join(docs[0][i] for i in range(len(docs[0])) if docs[0][i] is not None)
+    print(result)
+    return result if docs else "I'm sorry, I don't have an answer for that."
 
 def getImageResponse(image_bytes):
     o = ImageObj("images/dummy.png", image_bytes)
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("png_collection", [o.embeddings], n_results=1)
+    response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=1)
     response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=response["ids"][0][0])
     matched_image_data = response["Body"].read()
     matched_image = Image.open(io.BytesIO(matched_image_data)).convert('RGB')
@@ -72,7 +79,7 @@ def getAudioResponse(audio_bytes):
     o.clean()
     o.format()
     o.embed()
-    response = ChromaConnection().query("mp3_collection", [o.embeddings], n_results=1)
+    response = ChromaConnection().query("audio_multimodal_collection", o.embeddings, n_results=1)
     response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=response["ids"][0][0])
     matched_audio_data = response["Body"].read()
     return matched_audio_data
