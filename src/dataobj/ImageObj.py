@@ -56,4 +56,5 @@ class ImageObj(ADataObj):
         self.image = self.image.filter(ImageFilter.SHARPEN)
 
     def embed(self):
-        self.embeddings = embed_image(self.image).cpu().tolist()
+        key = self.path_prefix + "/" + self.filename + self.extension
+        self.embeddings = embed_image(key).cpu().tolist()

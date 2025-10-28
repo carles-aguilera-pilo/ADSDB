@@ -1,9 +1,9 @@
+from src.frontend.helpers.transformObjects import display_chat_message, getTextFromText, getImageFromText, getAudioFromText, getImageFromImage, getTextFromImage, getAudioFromImage, getAudioFromAudio, getTextFromAudio, getImageFromAudio
 from src.dataobj.TextObj import TextObj
 from src.dataobj.ImageObj import ImageObj
 from src.dataobj.AudioObj import AudioObj
 from src.chroma_connection import ChromaConnection
 from src.minio_connection import MinIOConnection
-
 import streamlit as st
 from audiorecorder import audiorecorder
 import io
@@ -236,7 +236,7 @@ with tab1:
     )
 
     with st.form(key="text_form", clear_on_submit=True):
-        prompt = st.text_input("What's on your mind?", key="text_prompt")
+        prompt = st.text_input("What's on your mind?", key="rag_text_prompt")
         submitted = st.form_submit_button("Send")
 
     if submitted and prompt:

@@ -57,10 +57,6 @@ def getTextResponse(prompt, k=10):
     o.clean()
     o.format()
     o.embed()
-    #print(type(o.embeddings))
-    #print(o.embeddings)
-    #print(type([o.embeddings]))
-    #print([o.embeddings])
     response = ChromaConnection().query("text_multimodal_collection", query_embeddings=o.embeddings, n_results=k)
     docs = response.get("documents")
     print(docs)
@@ -71,9 +67,10 @@ def getTextResponse(prompt, k=10):
     return result if docs else "I'm sorry, I don't have an answer for that."
 
 def getImageResponse(image_bytes, k=10):
-    o = ImageObj("images/dummy.png", image_bytes)
+    o = ImageObj("/tmp/image.png", image_bytes)
     o.clean()
     o.format()
+    o.save("exploitation-zone")
     o.embed()
     print(k)
     response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=k)
@@ -87,9 +84,10 @@ def getImageResponse(image_bytes, k=10):
     return images
 
 def getAudioResponse(audio_bytes, k=10):
-    o = AudioObj("audios/dummy.wav", audio_bytes)
+    o = AudioObj("/tmp/audio.mp3", audio_bytes)
     o.clean()
     o.format()
+    o.save("exploitation-zone")
     o.embed()
     response = ChromaConnection().query("audio_multimodal_collection", o.embeddings, n_results=k)
     keys = response.get("ids")

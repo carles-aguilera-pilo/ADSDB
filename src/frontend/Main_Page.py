@@ -21,6 +21,7 @@ st.markdown(
     ### What's available?
     - **🤖 Multimodal Chatbot**: Engage in a conversation using text, images, or your voice.
     - **🤖 Same Modality Chatbot**: Engage in a conversation using text, images, or your voice.
+    - **🤖 Generative Chatbot**: Engage in a conversation using text, images, or your voice enhanced with specific data.
 
     This application demonstrates how to structure a multi-page Streamlit app
     and integrate various I/O components.
