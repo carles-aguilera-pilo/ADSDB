@@ -19,6 +19,13 @@ st.set_page_config(
 st.title("Same Modality Chatbot")
 st.caption("This is the page for same modality interactions.")
 
+# --- Sidebar Configuration ---
+with st.sidebar:
+    st.header("⚙️ Configuración")
+    k_text = st.number_input("K para Texto", min_value=1, max_value=50, value=10, help="Número de respuestas para texto")
+    k_image = st.number_input("K para Imágenes", min_value=1, max_value=20, value=1, help="Número de respuestas para imágenes")
+    k_audio = st.number_input("K para Audio", min_value=1, max_value=20, value=1, help="Número de respuestas para audio")
+
 # --- Session State Initialization ---
 if "text_messages" not in st.session_state:
     st.session_state.text_messages = []
@@ -45,7 +52,7 @@ def get_mock_response(prompt, mode, data=None):
         else:
             return "🤖 I received your audio and am processing it. (Mock transcription: '...hello world...')"
 
-def getTextResponse(prompt):
+def getTextResponse(prompt, k=10):
     o = TextObj("texts/dummy.txt", prompt.encode('utf-8'))
     o.clean()
     o.format()
@@ -54,7 +61,7 @@ def getTextResponse(prompt):
     #print(o.embeddings)
     #print(type([o.embeddings]))
     #print([o.embeddings])
-    response = ChromaConnection().query("text_multimodal_collection", query_embeddings=o.embeddings, n_results=10)
+    response = ChromaConnection().query("text_multimodal_collection", query_embeddings=o.embeddings, n_results=k)
     docs = response.get("documents")
     print(docs)
     result = ""
@@ -63,7 +70,7 @@ def getTextResponse(prompt):
     print(result)
     return result if docs else "I'm sorry, I don't have an answer for that."
 
-def getImageResponse(image_bytes):
+def getImageResponse(image_bytes, k=1):
     o = ImageObj("images/dummy.png", image_bytes)
     o.clean()
     o.format()
@@ -100,7 +107,7 @@ with tab1:
     if submitted and prompt:
         st.session_state.text_messages.append({"role": "user", "content": prompt})
 
-        response = getTextResponse(prompt)
+        response = getTextResponse(prompt, k=k_text)
         st.session_state.text_messages.append({"role": "assistant", "content": response})
         
         st.rerun()
@@ -127,7 +134,7 @@ with tab2:
             "image": image_bytes
         })
 
-        response = getImageResponse(image_bytes)
+        response = getImageResponse(image_bytes, k=k_image)
         st.session_state.image_messages.append({"role": "assistant", "content": response})
         st.rerun()
 
@@ -162,7 +169,7 @@ with tab3:
             "audio": buffer.getvalue()
         })
 
-        response = getAudioResponse(buffer.getvalue())
+        response = getAudioResponse(buffer.getvalue(), k=k_audio)
 
         st.session_state.audio_messages.append({
             "role": "assistant", 

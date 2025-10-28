@@ -37,12 +37,12 @@ class AZone(ABC):
                     if modal == "images":
                         o = ImageObj(key, response["Body"].read())
                         self.treatData(o)
-                    elif modal == "audios":
+                    """elif modal == "audios":
                         o = AudioObj(key, response["Body"].read())
-                        self.treatData(o)
-                    elif modal == "texts":
+                        self.treatData(o) """
+                    """if modal == "texts":
                         o = TextObj(key, response["Body"].read())
-                        self.treatData(o)
+                        self.treatData(o) """
                     ###########################################
 
                     
