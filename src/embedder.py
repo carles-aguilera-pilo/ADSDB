@@ -6,6 +6,7 @@ import torchaudio
 from pytorchvideo.data.clip_sampling import ConstantClipsPerVideoSampler
 import logging
 import torch.nn.functional as F
+import io
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 model = imagebind_huge(pretrained=True)
