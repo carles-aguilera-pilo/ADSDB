@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class ILLM(ABC):
     @abstractmethod
-    def query(texts, images, audios):
+    def query(self, text, files):
         pass
     
    

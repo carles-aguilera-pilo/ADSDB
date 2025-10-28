@@ -1,7 +1,10 @@
+import os
+from dotenv import load_dotenv
 from src.dataobj.TextObj import TextObj
 from src.dataobj.ImageObj import ImageObj
 from src.dataobj.AudioObj import AudioObj
 from src.chroma_connection import ChromaConnection
+from src.llm.GeminiModel import GeminiModel
 from src.minio_connection import MinIOConnection
 from src.frontend.pages.Different_Modality import getTextFromText, getImageFromImage, getTextFromImage, getImageFromText
 
@@ -50,23 +53,27 @@ def display_chat_message(msg):
 
 # Perform rag
 
-def rag(user_text, user_image, user_image_path):
-    user_image
+def rag(user_text, user_image):
+    retrieved_texts = getTextFromText(user_text) # Related text from text
+    retrieved_images = [getImageFromText(user_text)] # Related images from text 
 
-    retrieved_texts = getTextFromText(user_text)
-    retrieved_images = getImageFromText(user_text)
-
-    if user_image_path != "":
-        retrieved_texts += getTextFromImage(user_image)
-        retrieved_images += getImageFromImage(user_image)
+    images_prompt = f""
+    if user_image != "":
+        retrieved_texts += getTextFromImage(user_image) # Related text from image
+        images_prompt = f"The user also provided an image, which corresponds to the last of the following sequence" 
+        retrieved_images += [getImageFromImage(user_image)] # Related image from image
+        retrieved_images.append(Image.open(io.BytesIO(user_image)))
+        
+    retrieved_images_paths = []
+    for i, image in enumerate(retrieved_images):
+        image.save(f"/tmp/{i}") # type: ignore
+        
+    final_prompt = f"You are a medical expert on skin cancers. A user asked the following question: {user_text}.{images_prompt}. Here is some useful information about it:{retrieved_texts}" 
     
-    images_prompt
-    prompt = f"You are a medical expert on skin cancers. A user asked the following question: {user_text}"
-
-
-
-
-    
+    load_dotenv()
+    api_key = os.getenv("GEMINI_API_KEY")
+    gm = GeminiModel(api_key, "gemini-2.5-flash")
+    return gm.query(final_prompt, retrieved_images_paths)
 
 
 # --- Streamlit Tabs ---
