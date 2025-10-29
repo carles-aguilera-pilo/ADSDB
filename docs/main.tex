@@ -295,9 +295,15 @@ The user interface is based on Streamlit\footnote{https://streamlit.io/}, an ope
 \subsection{Task 1. Similar modality search}
 \subsection{Task 2. Multimodal similarity search}
 \subsection{Task 3. RAG with external LLM}
-This task can be viewed as performing task 2 and then sending a query to an external LLM. At first, we tried to do a proof of concept by deploying LLaVA model locally, but we discarded it as we had some difficulties related with the size of the model. We opted for using Gemini API through the Python official SDK, as it is a well-known LLM and its free tier is enough for our needs and allows us to send multimodal queries involving images, texts and audios.
+This task can be viewed as performing task 2 and then sending a query to an external LLM. At first, we tried to do a proof of concept by deploying LLaVA model locally, but we discarded it as we had some difficulties related with the size of the model. We opted for using Gemini API through the Python official SDK, as it is a well-known LLM and its free tier is enough for our needs and allows us to send multimodal queries involving images, texts and audios. Some of the avantages of using Gemini are the easy integration for quick tests and not having to have the infraestructure to deploy the model. Nevertheless, some of the drawbacks are the economic cost (it it were deployed in a real case scenario, the free tier would very likely not be enough), loose of privacy and the loss of control on the model training (since it is deployed on Google's infraestructure).
 
-Currently, task 3 only accepts text and one image as user input. After that, the application queries ChromaDB for the related texts and images, crafts and enhanced prompt, sends it to Gemini and shows the response through the user interface.
+Currently, due to some difficulties managing multiple inputs, task 3 only accepts text and one image as user input. After that, the application queries ChromaDB for the related texts and images, crafts and enhanced prompt, sends it to Gemini and shows the response through the user interface. Notice that the number of retrieved results is equal to the dot product of the number of elements and number of types of data. In other words:
+\begin{itemize}
+    \item If the user sends a text, the system will query for the most similar text and the most similar image.
+    \item If the user send a text and image, the system will query for the most similar text and the most similar image for the given text, and also will query for the most similar text and the most similar image for the given image. So , in total, 2 texts and 2 images would be sent as context to the LLM.
+\end{itemize}
+
+The current approximation presents some drawbacks: From one hand, we are not benefitting from audio information, since we are ignoring it. We have done that in order to control the number of files that we send to the external LLM. From the other hand, we are limiting the user to only be able to upload one image for prompt  
 
 
 \end{document}
