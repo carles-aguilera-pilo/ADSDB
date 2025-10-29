@@ -32,8 +32,8 @@ def rag(user_text, user_image):
     if not user_text:
         user_text = "Describe this image"
 
-    retrieved_texts = getTextFromText(user_text)
-    retrieved_images = [getImageFromText(user_text)]
+    retrieved_texts = getTextFromText(user_text, k = 1)
+    retrieved_images = [getImageFromText(user_text, k = 1)]
 
     images_prompt = ""
     retrieved_images_paths = []
@@ -118,7 +118,14 @@ if submitted:
             user_image_bytes = uploaded_image.read()
             user_message["image"] = user_image_bytes
         st.session_state.messages.append(user_message)
+        
         with st.spinner("Thinking..."):
             response = rag(user_text=prompt, user_image=user_image_bytes)
-            st.session_state.messages.append({"role": "assistant", "content": response})
+            
+            try:
+                useful_content = "".join(part.text for part in response.candidates[0].content.parts)
+            except (AttributeError, IndexError, TypeError):
+                useful_content = "Error: Could not parse the response."
+
+            st.session_state.messages.append({"role": "assistant", "content": useful_content})
             st.rerun()

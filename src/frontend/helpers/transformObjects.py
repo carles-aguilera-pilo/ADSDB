@@ -39,10 +39,10 @@ def getImageFromText(prompt, k=10):
     o.format()
     o.embed()
     response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=k)
-    keys = response.get("ids")
+    keys = response.get("ids")[0]
+    print(keys)
     images = []
-    num_results = min(k, len(keys))
-    for i in range(num_results):
+    for i in range(len(keys)):
         obj = MinIOConnection().get_object(Bucket="exploitation-zone", Key=keys[i])
         matched_image_data = obj["Body"].read()
         images.append(Image.open(io.BytesIO(matched_image_data)).convert('RGB'))
