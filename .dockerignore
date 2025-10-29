@@ -1,0 +1,7 @@
+*
+
+!src/
+!requirements.txt
+!app.py
+!pipeline.py
+!.checkpoints
