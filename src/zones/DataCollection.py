@@ -10,7 +10,7 @@ from piper import PiperVoice
 
 
 class DataCollection():
-    BASE_DIR = os.getcwd().split("ADSDB")[0] + "ADSDB/"
+    BASE_DIR = os.getcwd().split("ADSDB")[0]
     OUTPUT_DIR = os.path.join(BASE_DIR, "output/")
 
     @classmethod
