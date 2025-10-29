@@ -31,8 +31,10 @@ streamlit_audiorecorder==0.0.6
 accelerate==1.11.0
 google-genai==1.46.0
 open-clip-torch==2.31.0
-torch==2.8.0
-torchaudio==2.8.0
-torchvision==0.23.0
+torch==2.9.0
+torchaudio==2.9.0
+torchvision==0.24.0
 wav2clip
 seaborn
+st-pages==1.0.1
+torchcodec==0.8.1

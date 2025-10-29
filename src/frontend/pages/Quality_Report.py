@@ -9,35 +9,21 @@ from io import BytesIO
 from PIL import Image
 import cv2
 import librosa
-import librosa.display
 from pydub import AudioSegment
 from pydub.silence import detect_silence
 import math
 import re
 import unicodedata
 from dotenv import load_dotenv
-from tqdm import tqdm # tqdm will be used by librosa, but we'll use st.spinner for UI
-
-# -------------------------------------------------------------------
-# PAGE CONFIGURATION
-# -------------------------------------------------------------------
 
 st.set_page_config(
     page_title="Data Quality Report",
-    page_icon="📊",
     layout="wide"
 )
-
-# -------------------------------------------------------------------
-# MINIO S3 CLIENT (CACHED)
-# -------------------------------------------------------------------
-
-# Load environment variables
 load_dotenv()
 
 @st.cache_resource
 def get_minio_client():
-    """Initializes and returns a cached MinIO client."""
     try:
         access_key_id = os.getenv("ACCESS_KEY_ID")
         secret_access_key = os.getenv("SECRET_ACCESS_KEY")
@@ -58,11 +44,6 @@ def get_minio_client():
         st.error(f"Failed to initialize MinIO client: {e}")
         return None
 
-# -------------------------------------------------------------------
-# ANALYSIS FUNCTIONS (from notebooks)
-# -------------------------------------------------------------------
-
-# --- Text Analysis ---
 def analisi_text(text):
     problemas = {}
 
@@ -104,7 +85,6 @@ def analisi_text(text):
         "problems_texto_vacio": problemas["texto_vacio"]
     }
 
-# --- Image Analysis ---
 def analisi_imagen(img_bytes):
     try:
         img = Image.open(BytesIO(img_bytes))
@@ -116,8 +96,6 @@ def analisi_imagen(img_bytes):
             modo = img.mode
         
         image_np = np.array(img)
-
-        # Ensure image is 3-channel for functions expecting color
         if modo == 'L':
              gray_np = image_np
              color_np = cv2.cvtColor(image_np, cv2.COLOR_GRAY2RGB)
@@ -127,24 +105,19 @@ def analisi_imagen(img_bytes):
         else: # RGB
              gray_np = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
              color_np = image_np
-
-
-        #---- CHECK DIMENSIONS & ASPECT RATIO ----
         aspect_ratio = width / height if height > 0 else 0
         total_pixels = width * height
         is_square = abs(aspect_ratio - 1.0) < 0.05
         is_portrait = aspect_ratio < 0.8
         is_landscape = aspect_ratio > 1.2
-        
-        #---- CHECK BRIGHTNESS AND CONTRAST ----
+
         brillo = np.mean(gray_np)
         contraste = np.std(gray_np)
         
         fosca = brillo < 80
         brillant = brillo > 200
         contrast = contraste < 10
-        
-        #---- CHECK COLOR SATURATION ----
+
         has_color = (modo == 'RGB' or modo == 'RGBA')
         if has_color:
             saturation = np.std(cv2.cvtColor(color_np, cv2.COLOR_RGB2HSV)[:, :, 1])
@@ -155,13 +128,11 @@ def analisi_imagen(img_bytes):
             low_saturation = True
             high_saturation = False
             
-        #---- CHECK SHARPNESS / BLUR ----
         variance = cv2.Laplacian(gray_np, cv2.CV_64F).var()
         necessita_nitidez = variance < 50
         blur_score = variance
         blur_detected = variance < 50
         
-        #---- CHECK NOISE ----
         blur_cv = cv2.GaussianBlur(gray_np, (3,3), 0)
         diff = cv2.absdiff(gray_np, blur_cv)
         local_variance = np.var(diff)
@@ -173,14 +144,11 @@ def analisi_imagen(img_bytes):
         else:
             noise = 'High'
         
-        #---- CHECK COLOR CHANNELS ----
         num_channels = len(modo)
         
-        #---- COMPRESSION ARTIFACTS DETECTION ----
-        compression_score = variance # Using Laplacian variance as a proxy
+        compression_score = variance
         compression_artifacts = compression_score < 20
         
-        #---- QUALITY SCORE (Composite) ----
         quality_score = 100
         if fosca or brillant: quality_score -= 20
         if contrast: quality_score -= 15
@@ -200,9 +168,8 @@ def analisi_imagen(img_bytes):
         }
     except Exception as e:
         st.warning(f"Could not process an image. Error: {e}")
-        return None # Return None for failed analysis
+        return None
 
-# --- Audio Analysis ---
 def detectar_filtro(centroid, rolloff, ratio):
     if centroid < 1500 and rolloff < 3000 and ratio < 0.5:
         return "Low-pass filter"
@@ -238,20 +205,19 @@ def analyze_audio_file(audio_bytes):
             samples = samples.reshape((-1, 2))
             samples = np.mean(samples, axis=1)
         
-        if audio.sample_width == 1: # 8-bit
+        if audio.sample_width == 1:
              samples /= 128.0 
-        elif audio.sample_width == 2: # 16-bit
+        elif audio.sample_width == 2:
              samples /= 32768.0
-        elif audio.sample_width == 4: # 32-bit
+        elif audio.sample_width == 4:
              samples /= 2147483648.0
             
         sr = audio.frame_rate
         
         if len(samples) == 0:
-            return None # Skip empty audio file
+            return None
 
         centroid = librosa.feature.spectral_centroid(y=samples, sr=sr)
-        bandwidth = librosa.feature.spectral_bandwidth(y=samples, sr=sr)
         rolloff = librosa.feature.spectral_rolloff(y=samples, sr=sr, roll_percent=0.95)
 
         S = np.abs(librosa.stft(samples))
@@ -262,7 +228,6 @@ def analyze_audio_file(audio_bytes):
         ratio = high_energy / (low_energy + 1e-9)
 
         centroid_mean = np.mean(centroid)
-        bandwidth_mean = np.mean(bandwidth)
         rolloff_mean = np.mean(rolloff)
         
         filter_type = detectar_filtro(centroid_mean, rolloff_mean, ratio)
@@ -276,14 +241,9 @@ def analyze_audio_file(audio_bytes):
         }
     except Exception as e:
         st.warning(f"Could not process an audio file. Error: {e}")
-        return None # Return None for failed analysis
-
-# -------------------------------------------------------------------
-# DATA LOADING FUNCTIONS (CACHED)
-# -------------------------------------------------------------------
+        return None
 
 def load_data(bucket, prefix, analysis_func, file_type):
-    """Generic data loading and analysis function."""
     minio_client = get_minio_client()
     if minio_client is None:
         return pd.DataFrame()
@@ -296,7 +256,7 @@ def load_data(bucket, prefix, analysis_func, file_type):
             for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
                 for obj in page.get("Contents", []):
                     key = obj["Key"]
-                    if key.endswith('/'): continue # Skip directories
+                    if key.endswith('/'): continue
 
                     response = minio_client.get_object(Bucket=bucket, Key=key)
                     data_bytes = response["Body"].read()
@@ -318,10 +278,6 @@ def load_data(bucket, prefix, analysis_func, file_type):
         return pd.DataFrame()
         
     return pd.DataFrame(analysis_list)
-
-# -------------------------------------------------------------------
-# STATISTICAL SUMMARY FUNCTIONS
-# -------------------------------------------------------------------
 
 def show_text_stats(df):
     summary_text = f"""
@@ -457,17 +413,10 @@ FILTER TYPES:
     summary_text += "================================================================================\n"
     st.code(summary_text, language="text")
 
-
-# -------------------------------------------------------------------
-# PLOTTING FUNCTIONS
-# -------------------------------------------------------------------
-
-# --- Text Plots ---
 def plot_text_summary(df):
     fig, axes = plt.subplots(3, 3, figsize=(20, 15))
     fig.suptitle('Text Quality - Overall Summary', fontsize=20, y=1.03)
 
-    # 1. Control characters
     axes[0, 0].bar(['Files with', 'Files without'], 
                    [df[df['problems_control_caracters'] > 0].shape[0],
                     df[df['problems_control_caracters'] == 0].shape[0]],
@@ -475,13 +424,11 @@ def plot_text_summary(df):
     axes[0, 0].set_title('Control Characters Detection')
     axes[0, 0].set_ylabel('Number of Files')
 
-    # 2. Lines with spaces
     sns.histplot(df['problems_lineas_con_espacios'], bins=20, color='orange', ax=axes[0, 1], kde=True)
     axes[0, 1].set_title('Distribution: Lines with Trailing/Leading Spaces')
     axes[0, 1].set_xlabel('Count')
     axes[0, 1].set_ylabel('Frequency')
 
-    # 3. Multiple line breaks
     axes[0, 2].bar(['Yes', 'No'], 
                    [df['problems_saltos_multiples'].sum(),
                     len(df) - df['problems_saltos_multiples'].sum()],
@@ -489,37 +436,31 @@ def plot_text_summary(df):
     axes[0, 2].set_title('Multiple Line Breaks')
     axes[0, 2].set_ylabel('Number of Files')
 
-    # 4. Empty lines
     sns.histplot(df['problems_lineas_vacias'], bins=20, color='purple', ax=axes[1, 0], kde=True)
     axes[1, 0].set_title('Distribution: Empty Lines')
     axes[1, 0].set_xlabel('Count')
     axes[1, 0].set_ylabel('Frequency')
 
-    # 5. Special characters
     sns.histplot(df['problems_caracteres_especiales'], bins=20, color='cyan', ax=axes[1, 1], kde=True)
     axes[1, 1].set_title('Distribution: Special Characters')
     axes[1, 1].set_xlabel('Count')
     axes[1, 1].set_ylabel('Frequency')
 
-    # 6. Typographic quotes
     sns.histplot(df['problems_comillas_tipograficas'], bins=10, color='pink', ax=axes[1, 2], kde=True)
     axes[1, 2].set_title('Distribution: Typographic Quotes')
     axes[1, 2].set_xlabel('Count')
     axes[1, 2].set_ylabel('Frequency')
 
-    # 7. Typographic apostrophes
     sns.histplot(df['problems_apostrofes_tipograficos'], bins=10, color='brown', ax=axes[2, 0], kde=True)
     axes[2, 0].set_title('Distribution: Typographic Apostrophes')
     axes[2, 0].set_xlabel('Count')
     axes[2, 0].set_ylabel('Frequency')
 
-    # 8. Multiple hyphens
     axes[2, 1].bar(['Yes', 'No'], [df['problems_guiones_multiples'].sum(),
                     len(df) - df['problems_guiones_multiples'].sum()],color=['red', 'green'])
     axes[2, 1].set_title('Multiple Hyphens Detection')
     axes[2, 1].set_ylabel('Number of Files')
 
-    # 9. Empty text
     axes[2, 2].bar(['No', 'Yes'], 
         [len(df) - df['problems_texto_vacio'].sum(),
                     df['problems_texto_vacio'].sum()],
@@ -546,12 +487,10 @@ def plot_text_correlation(df):
     plt.tight_layout()
     return fig
 
-# --- Image Plots ---
 def plot_image_brightness_contrast(df):
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
     fig.suptitle('Image Brightness & Contrast Analysis', fontsize=16, y=1.03)
 
-    # Line plot for brightness and contrast
     axes[0].plot(df['brillo'], label='Brightness')
     axes[0].plot(df['contraste'], label='Contrast')
     axes[0].set_title('Brightness and Contrast per Image')
@@ -559,14 +498,12 @@ def plot_image_brightness_contrast(df):
     axes[0].set_ylabel('Value')
     axes[0].legend()
 
-    # Count plot for 'fosc' (dark)
     df_temp_fosc = df.copy()
     df_temp_fosc['fosc'] = df_temp_fosc['fosc'].astype(str)
     sns.countplot(data=df_temp_fosc, x='fosc', ax=axes[1])
     axes[1].set_title('Distribution: Dark Images (True/False)')
     axes[1].set_xlabel('')
 
-    # Count plot for 'brillant' (bright)
     df_temp_brillant = df.copy()
     df_temp_brillant['brillant'] = df_temp_brillant['brillant'].astype(str)
     sns.countplot(data=df_temp_brillant, x='brillant', ax=axes[2])
@@ -580,7 +517,6 @@ def plot_image_dims(df):
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
     fig.suptitle('Image Dimension & Aspect Ratio Analysis', fontsize=16, y=1.03)
 
-    # Width and height distribution
     sns.histplot(df['width'], bins=20, alpha=0.5, label='Width', color='blue', ax=axes[0, 0], kde=True)
     sns.histplot(df['height'], bins=20, alpha=0.5, label='Height', color='red', ax=axes[0, 0], kde=True)
     axes[0, 0].set_title('Distribution of Width and Height')
@@ -588,7 +524,6 @@ def plot_image_dims(df):
     axes[0, 0].set_ylabel('Frequency')
     axes[0, 0].legend()
 
-    # Aspect Ratio
     sns.histplot(df['aspect_ratio'], bins=30, color='green', ax=axes[0, 1], kde=True)
     axes[0, 1].set_title('Distribution of Aspect Ratio')
     axes[0, 1].set_xlabel('Ratio (Width/Height)')
@@ -596,7 +531,6 @@ def plot_image_dims(df):
     axes[0, 1].axvline(x=1.0, color='red', linestyle='--', label='Square (1:1)')
     axes[0, 1].legend()
 
-    # Image orientation
     orientation_counts = pd.DataFrame({
         'Type': ['Square', 'Portrait', 'Landscape'],
         'Count': [df['is_square'].sum(), df['is_portrait'].sum(), df['is_landscape'].sum()]
@@ -605,7 +539,6 @@ def plot_image_dims(df):
     axes[1, 0].set_title('Image Orientation')
     axes[1, 0].set_ylabel('Count')
 
-    # Total pixels
     sns.histplot(df['total_pixels'], bins=30, color='brown', ax=axes[1, 1], kde=True)
     axes[1, 1].set_title('Distribution of Total Pixels')
     axes[1, 1].set_xlabel('Total Pixels')
@@ -618,7 +551,6 @@ def plot_image_color(df):
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
     fig.suptitle('Image Color & Saturation Analysis', fontsize=16, y=1.03)
 
-    # Saturation histogram
     sns.histplot(df['saturation'], bins=30, color='pink', ax=axes[0], kde=True)
     axes[0].axvline(x=30, color='red', linestyle='--', label='Low Threshold')
     axes[0].axvline(x=100, color='blue', linestyle='--', label='High Threshold')
@@ -627,7 +559,6 @@ def plot_image_color(df):
     axes[0].set_ylabel('Frequency')
     axes[0].legend()
 
-    # Low/high saturation distribution
     saturation_counts = pd.DataFrame({
         'Type': ['Normal', 'Low Saturation', 'High Saturation'],
         'Count': [
@@ -640,7 +571,6 @@ def plot_image_color(df):
     axes[1].set_title('Color Saturation (Classification)')
     axes[1].set_ylabel('Count')
 
-    # Color channels
     channel_counts = df['num_channels'].value_counts().sort_index()
     sns.barplot(x=channel_counts.index.astype(str), y=channel_counts.values, ax=axes[2], color='teal')
     axes[2].set_title('Number of Color Channels')
@@ -654,7 +584,6 @@ def plot_image_quality_score(df):
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
     fig.suptitle('Overall Image Quality Score Analysis', fontsize=16, y=1.03)
 
-    # Quality Score distribution
     sns.histplot(df['quality_score'], bins=20, color='darkgreen', edgecolor='black', ax=axes[0, 0], kde=True)
     axes[0, 0].axvline(x=70, color='red', linestyle='--', label='Threshold (70)')
     axes[0, 0].set_title('Distribution of Quality Score')
@@ -662,7 +591,6 @@ def plot_image_quality_score(df):
     axes[0, 0].set_ylabel('Frequency')
     axes[0, 0].legend()
 
-    # Quality classification
     quality_levels = pd.cut(df['quality_score'], bins=[0, 50, 70, 85, 100], labels=['Poor', 'Fair', 'Good', 'Excellent'])
     quality_counts = quality_levels.value_counts().sort_index()
     sns.barplot(x=quality_counts.index.astype(str), y=quality_counts.values, ax=axes[0, 1], palette=['red', 'orange', 'yellow', 'green'])
@@ -670,13 +598,11 @@ def plot_image_quality_score(df):
     axes[0, 1].set_ylabel('Number of Images')
     axes[0, 1].tick_params(axis='x', rotation=45)
 
-    # Blur Score vs Quality Score
     axes[1, 0].scatter(df['blur_score'], df['quality_score'], alpha=0.5, s=50)
     axes[1, 0].set_title('Relationship: Blur Score vs Quality Score')
     axes[1, 0].set_xlabel('Blur Score (Higher is Sharper)')
     axes[1, 0].set_ylabel('Quality Score')
 
-    # Correlation matrix
     quality_metrics = ['brillo', 'contraste', 'saturation', 'blur_score', 'quality_score']
     correlation_matrix = df[quality_metrics].corr()
     sns.heatmap(correlation_matrix, annot=True, fmt='.2f', cmap='coolwarm', center=0, ax=axes[1, 1])
@@ -686,62 +612,52 @@ def plot_image_quality_score(df):
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     return fig
 
-# --- Audio Plots ---
 def plot_audio_summary(df):
     fig, axes = plt.subplots(3, 3, figsize=(20, 15))
     fig.suptitle('Audio Quality - Overall Summary', fontsize=20, y=1.03)
 
-    # 1. Duration distribution
     sns.histplot(df['duration'], bins=20, color='blue', edgecolor='black', ax=axes[0, 0], kde=True)
     axes[0, 0].set_title('Duration Distribution (seconds)')
     axes[0, 0].set_xlabel('Duration (seconds)')
     axes[0, 0].set_ylabel('Frequency')
 
-    # 2. Frame rate (sample rate) distribution
     sns.histplot(df['frame_rate'], bins=15, color='green', edgecolor='black', ax=axes[0, 1], kde=True)
     axes[0, 1].set_title('Sample Rate Distribution')
     axes[0, 1].set_xlabel('Sample Rate (Hz)')
     axes[0, 1].set_ylabel('Frequency')
 
-    # 3. Channels (mono vs stereo)
     channels_counts = df['channels'].value_counts()
     sns.barplot(x=channels_counts.index.astype(str), y=channels_counts.values, ax=axes[0, 2], palette=['red', 'blue'])
     axes[0, 2].set_title('Audio Channels Distribution')
     axes[0, 2].set_xlabel('Channels')
     axes[0, 2].set_ylabel('Count')
 
-    # 4. Audio level (RMS in dB)
     sns.histplot(df['audio_level'], bins=20, color='orange', edgecolor='black', ax=axes[1, 0], kde=True)
     axes[1, 0].set_title('Audio Level Distribution (dB)')
     axes[1, 0].set_xlabel('RMS Level (dB)')
     axes[1, 0].set_ylabel('Frequency')
 
-    # 5. Dynamic range
     sns.histplot(df['dynamic_range'], bins=20, color='purple', edgecolor='black', ax=axes[1, 1], kde=True)
     axes[1, 1].set_title('Dynamic Range Distribution')
     axes[1, 1].set_xlabel('Dynamic Range')
     axes[1, 1].set_ylabel('Frequency')
 
-    # 6. Silence percentage
     sns.histplot(df['silence_percent'], bins=20, color='cyan', edgecolor='black', ax=axes[1, 2], kde=True)
     axes[1, 2].set_title('Silence Percentage Distribution')
     axes[1, 2].set_xlabel('Silence (%)')
     axes[1, 2].set_ylabel('Frequency')
 
-    # 7. Noise floor (dBFS)
     sns.histplot(df['noise_floor'], bins=20, color='pink', edgecolor='black', ax=axes[2, 0], kde=True)
     axes[2, 0].set_title('Noise Floor Distribution (dBFS)')
     axes[2, 0].set_xlabel('Noise Floor (dBFS)')
     axes[2, 0].set_ylabel('Frequency')
 
-    # 8. Filter type distribution
     filter_counts = df['filter_type'].value_counts()
     sns.barplot(x=filter_counts.index, y=filter_counts.values, ax=axes[2, 1], palette=['brown', 'gray', 'gold', 'coral'])
     axes[2, 1].set_title('Filter Type Distribution')
     axes[2, 1].set_xticklabels(filter_counts.index, rotation=45, ha='right')
     axes[2, 1].set_ylabel('Count')
 
-    # 9. Sample width distribution
     sample_width_counts = df['sample_width'].value_counts()
     sns.barplot(x=sample_width_counts.index.astype(str), y=sample_width_counts.values, ax=axes[2, 2], color='teal')
     axes[2, 2].set_title('Sample Width Distribution (bytes)')
@@ -754,14 +670,12 @@ def plot_audio_summary(df):
 def plot_audio_correlation(df):
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
-    # Correlation matrix
     correlation_metrics = ['duration', 'audio_level', 'noise_floor', 'silence_percent', 'dynamic_range']
     corr_matrix = df[correlation_metrics].corr()
 
     sns.heatmap(corr_matrix, annot=True, fmt='.2f', cmap='coolwarm', center=0, ax=axes[0])
     axes[0].set_title('Correlation Matrix of Audio Metrics')
 
-    # Audio level vs Dynamic range
     axes[1].scatter(df['audio_level'], df['dynamic_range'], alpha=0.6, s=50)
     axes[1].set_title('Audio Level vs Dynamic Range')
     axes[1].set_xlabel('Audio Level (dB)')
@@ -770,11 +684,7 @@ def plot_audio_correlation(df):
     plt.tight_layout()
     return fig
 
-# -------------------------------------------------------------------
-# MAIN STREAMLIT APP
-# -------------------------------------------------------------------
-
-st.title("📊 Data Quality Assurance Report")
+st.title("Data Quality Report")
 
 st.markdown("""
 This dashboard provides a comprehensive analysis of the data quality for text, image, and audio files 
@@ -785,31 +695,22 @@ encoding problems, low-quality media, and inconsistencies that could affect down
 if get_minio_client() is None:
     st.stop()
 
-# --- Load Data ---
-# We load all data at the start, and caching will ensure it only runs once.
 df_text = load_data(bucket="formatted-zone", prefix="text/", analysis_func=analisi_text, file_type="text")
 df_image = load_data(bucket="formatted-zone", prefix="images/", analysis_func=analisi_imagen, file_type="image")
 df_audio = load_data(bucket="formatted-zone", prefix="audio/", analysis_func=analyze_audio_file, file_type="audio")
 
-
-# --- Create Tabs ---
 tab_text, tab_image, tab_audio = st.tabs(["Text Quality", "Image Quality", "Audio Quality"])
 
-# -------------------------
-# TEXT TAB
-# -------------------------
 with tab_text:
     st.header("Text Quality Analysis")
     if df_text.empty:
         st.warning("No text data found to display.")
     else:
         st.markdown("Analyzes text files for control characters, whitespace issues, special characters, and other formatting problems.")
-        
-        # Statistical Summary
+
         with st.expander("Show Statistical Summary", expanded=False):
             show_text_stats(df_text)
-        
-        # Main Visualizations
+
         st.subheader("Overall Quality Summary")
         st.pyplot(plot_text_summary(df_text))
         with st.expander("Interpretation of Text Visualizations"):
@@ -825,7 +726,6 @@ with tab_text:
             9.  **Empty Text**: Critical issue if any files have this problem. Completely empty files indicate data quality problems.
             """)
 
-        # Correlation
         st.subheader("Correlation Analysis")
         st.pyplot(plot_text_correlation(df_text))
         with st.expander("Interpretation of Correlation Analysis"):
@@ -841,13 +741,9 @@ with tab_text:
             * **Outliers**: Points far from the main cloud may represent problematic files that need attention.
             """)
 
-        # Raw Data
         with st.expander("Show Raw Text Data"):
             st.dataframe(df_text)
 
-# -------------------------
-# IMAGE TAB
-# -------------------------
 with tab_image:
     st.header("Image Quality Analysis")
     if df_image.empty:
@@ -868,12 +764,10 @@ with tab_image:
             - **`compression_artifacts`**: Detects degradation from excessive compression.
             - **`quality_score`**: Composite score (0-100) penalizing issues like blur, low contrast, and noise.
             """)
-        
-        # Statistical Summary
+
         with st.expander("Show Statistical Summary", expanded=False):
             show_image_stats(df_image)
 
-        # Visualizations
         st.subheader("Brightness & Contrast Analysis")
         st.pyplot(plot_image_brightness_contrast(df_image))
         with st.expander("Interpretation"):
@@ -911,13 +805,9 @@ with tab_image:
             4.  **Correlation Matrix**: Heatmap identifies which metrics are related (e.g., contrast and quality).
             """)
 
-        # Raw Data
         with st.expander("Show Raw Image Data"):
             st.dataframe(df_image)
 
-# -------------------------
-# AUDIO TAB
-# -------------------------
 with tab_audio:
     st.header("Audio Quality Analysis")
     if df_audio.empty:
@@ -937,12 +827,10 @@ with tab_audio:
             - **`silence_percent`**: Percentage of silence. High values (>30%) may be poor recordings.
             - **`filter_type`**: Detects if audio has low-pass, high-pass, or band-pass filters. "No filter" is preferred.
             """)
-        
-        # Statistical Summary
+
         with st.expander("Show Statistical Summary", expanded=False):
             show_audio_stats(df_audio)
-        
-        # Main Visualizations
+
         st.subheader("Overall Quality Summary")
         st.pyplot(plot_audio_summary(df_audio))
         with st.expander("Interpretation of Audio Visualizations"):
@@ -958,7 +846,6 @@ with tab_audio:
             9.  **Sample Width Distribution**: Bit depth. 2 bytes (16-bit) is standard quality.
             """)
 
-        # Correlation
         st.subheader("Correlation Analysis")
         st.pyplot(plot_audio_correlation(df_audio))
         with st.expander("Interpretation of Correlation Analysis"):
@@ -973,6 +860,5 @@ with tab_audio:
             * **Negative trend or clustering**: May indicate compression artifacts or quality issues.
             """)
 
-        # Raw Data
         with st.expander("Show Raw Audio Data"):
             st.dataframe(df_audio)

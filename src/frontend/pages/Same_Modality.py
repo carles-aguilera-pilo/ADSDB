@@ -1,32 +1,26 @@
-from src.dataobj.TextObj import TextObj
-from src.dataobj.ImageObj import ImageObj
-from src.dataobj.AudioObj import AudioObj
-from src.chroma_connection import ChromaConnection
-from src.minio_connection import MinIOConnection
-
 import streamlit as st
 from audiorecorder import audiorecorder
 import io
-from PIL import Image
+from src.frontend.helpers.transformObjects import (
+    getTextFromText,
+    getImageFromImage,
+    getAudioFromAudio
+)
 
-# --- Page Config ---
 st.set_page_config(
     page_title="Same Modality Chatbot",
-    page_icon="🤖",
     layout="wide"
 )
 
 st.title("Same Modality Chatbot")
 st.caption("This is the page for same modality interactions.")
 
-# --- Sidebar Configuration ---
 with st.sidebar:
-    st.header("⚙️ Configuración")
+    st.header("Configuración")
     k_text = st.number_input("K para Texto", min_value=1, max_value=50, value=10, help="Número de respuestas para texto")
     k_image = st.number_input("K para Imágenes", min_value=1, max_value=20, value=1, help="Número de respuestas para imágenes")
     k_audio = st.number_input("K para Audio", min_value=1, max_value=20, value=1, help="Número de respuestas para audio")
 
-# --- Session State Initialization ---
 if "text_messages" not in st.session_state:
     st.session_state.text_messages = []
 if "image_messages" not in st.session_state:
@@ -36,70 +30,8 @@ if "audio_messages" not in st.session_state:
 if "last_processed_audio" not in st.session_state:
     st.session_state.last_processed_audio = None
 
-# --- Mock Response Function (FIXED) ---
-def get_mock_response(prompt, mode, data=None):
-    if mode == "text":
-        return f"🤖 Echo: {prompt}"
-    elif mode == "image":
-        # FIXED: Handle cases where no text prompt is provided
-        if prompt:
-            return f"🤖 I see an image! You asked: '{prompt}'"
-        else:
-            return "🤖 I see an image!"
-    elif mode == "audio":
-        if prompt:
-            return f"🤖 I received your audio. Your prompt was: '{prompt}'. (Mock transcription: '...hello world...')"
-        else:
-            return "🤖 I received your audio and am processing it. (Mock transcription: '...hello world...')"
 
-def getTextResponse(prompt, k=10):
-    o = TextObj("texts/dummy.txt", prompt.encode('utf-8'))
-    o.clean()
-    o.format()
-    o.embed()
-    response = ChromaConnection().query("text_multimodal_collection", query_embeddings=o.embeddings, n_results=k)
-    docs = response.get("documents")
-    print(docs)
-    result = ""
-    if docs and len(docs) > 0 and len(docs[0]) > 0:
-        result = " ".join(docs[0][i] for i in range(len(docs[0])) if docs[0][i] is not None)
-    print(result)
-    return result if docs else "I'm sorry, I don't have an answer for that."
-
-def getImageResponse(image_bytes, k=10):
-    o = ImageObj("/tmp/image.png", image_bytes)
-    o.clean()
-    o.format()
-    o.save("exploitation-zone")
-    o.embed()
-    print(k)
-    response = ChromaConnection().query("image_multimodal_collection", o.embeddings, n_results=k)
-    keys = response.get("ids")
-    images = []
-    for i in range(k):
-        response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=keys[0][i])
-        matched_image_data = response["Body"].read()
-        matched_image = Image.open(io.BytesIO(matched_image_data)).convert('RGB')
-        images.append(matched_image)
-    return images
-
-def getAudioResponse(audio_bytes, k=10):
-    o = AudioObj("/tmp/audio.mp3", audio_bytes)
-    o.clean()
-    o.format()
-    o.save("exploitation-zone")
-    o.embed()
-    response = ChromaConnection().query("audio_multimodal_collection", o.embeddings, n_results=k)
-    keys = response.get("ids")
-    audios = []
-    for i in range(k):
-        response = MinIOConnection().get_object(Bucket="exploitation-zone", Key=keys[0][i])
-        matched_audio_data = response["Body"].read()
-        audios.append(matched_audio_data)
-    return audios
-
-
-tab1, tab2, tab3 = st.tabs(["💬 Text Mode", "🖼️ Image Mode", "🎤 Audio Mode"])
+tab1, tab2, tab3 = st.tabs(["Text", "Image", "Audio"])
 
 with tab1:
     st.header("Chat with Text")
@@ -108,13 +40,13 @@ with tab1:
         st.chat_message(msg["role"]).write(msg["content"])
 
     with st.form(key="text_form", clear_on_submit=True):
-        prompt = st.text_input("What's on your mind?", key="text_prompt")
+        prompt = st.text_input("Type something...", key="text_prompt")
         submitted = st.form_submit_button("Send")
 
     if submitted and prompt:
         st.session_state.text_messages.append({"role": "user", "content": prompt})
 
-        response = getTextResponse(prompt, k=k_text)
+        response = getTextFromText(prompt, k=k_text)
         st.session_state.text_messages.append({"role": "assistant", "content": response})
         
         st.rerun()
@@ -130,7 +62,7 @@ with tab2:
                 st.image(msg["image"], width=300)
 
     with st.form(key="image_form", clear_on_submit=True):
-        uploaded_image = st.file_uploader("Upload an image (no prompt needed)", type=["png", "jpg", "jpeg"])
+        uploaded_image = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
         submitted = st.form_submit_button("Send")
 
     if submitted and uploaded_image is not None:
@@ -141,7 +73,7 @@ with tab2:
             "image": image_bytes
         })
 
-        response = getImageResponse(image_bytes, k=k_image)
+        response = getImageFromImage(image_bytes, k=k_image)
         for img in response:
             st.session_state.image_messages.append({"role": "assistant", "image": img})
         st.rerun()
@@ -177,7 +109,7 @@ with tab3:
             "audio": buffer.getvalue()
         })
 
-        response = getAudioResponse(buffer.getvalue(), k=k_audio)
+        response = getAudioFromAudio(buffer.getvalue(), k=k_audio)
 
         for audio_data in response:
             st.session_state.audio_messages.append({

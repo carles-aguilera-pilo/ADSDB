@@ -7,6 +7,6 @@ class FormattedZone(AZone):
         self.supported_modals = supported_modals
 
     def treatData(self, dataobj):
-        dataobj.clean() # Applies persistent-formatted transformation on data
+        dataobj.clean()
         dataobj.save(self.bucket_destination)
     

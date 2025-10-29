@@ -1,29 +1,23 @@
 import streamlit as st
 
-# --- Page Config ---
-# The page config must be the first Streamlit command used, and must only be set once
 st.set_page_config(
-    page_title="AI Creations Hub",
-    page_icon="💌",
+    page_title="Projecte ADSDB",
     layout="centered"
 )
 
-# --- Main Page Content ---
-st.title("💌 Welcome to the AI Creations Hub!")
-st.sidebar.success("Select a studio from the menu above.")
+st.title("Projecte ADSDB")
 
 st.markdown(
     """
-    This is a hub for multimodal AI applications built with Streamlit.
+    ## Demonstration of the ADSDB Project: Deliverable 1
 
-    **👈 Select a studio from the sidebar** to get started.
+    This application shows various functionalities developed during the ADSDB project. 
+    You can navigate through the different pages using the sidebar.
 
-    ### What's available?
-    - **🤖 Multimodal Chatbot**: Engage in a conversation using text, images, or your voice.
-    - **🤖 Same Modality Chatbot**: Engage in a conversation using text, images, or your voice.
-    - **🤖 Generative Chatbot**: Engage in a conversation using text, images, or your voice enhanced with specific data.
-
-    This application demonstrates how to structure a multi-page Streamlit app
-    and integrate various I/O components.
+    ### What is available?
+    - **Same Modality Chatbot**: Chatbot that allows you to ask questions and receive answers in the same format (text, image, or voice).
+    - **Multi Modality Chatbot**: Chatbot that allows you to ask questions and receive answers in different formats (text, image, or voice).
+    - **Generative Chatbot**: Chatbot that allows you to ask questions and receive generative answers in different formats (text, image, or voice) enhanced with specific data.
+    - **Quality Report**: We have also added a page to display the data quality report. This report includes various metrics and visualizations to help you understand the quality of the data used in our chatbots.
     """
 )

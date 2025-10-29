@@ -19,7 +19,6 @@ class TextObj(ADataObj):
     def save(self, bucket_destination, chromadb: bool=False, collection_name: str=None):        
         for i, text in enumerate(self.texts):
             buffer = io.BytesIO(text.encode('utf-8'))
-            print(f"Embeddings: {self.embeddings}")
             key = self.path_prefix + "/" + self.filename + f"_{i}" + self.extension
             minio_client = MinIOConnection()
             minio_client.upload_fileobj(Fileobj=buffer, Bucket=bucket_destination, Key=key)
@@ -41,24 +40,23 @@ class TextObj(ADataObj):
             self.extension = ".txt"
 
     def clean(self):
-        # If we have any problem, check
         for i, text in enumerate(self.texts):
             text = unicodedata.normalize('NFKD', text)
             text = ''.join(char for char in text if unicodedata.category(char)[0] != 'C' or char in '\n\t')
-            text = re.sub(r"[ \t]+", " ", text)          # Espacios y tabs múltiples → un espacio
+            text = re.sub(r"[ \t]+", " ", text)
             text = re.sub(r"\s+", " ", text)
-            text = re.sub(r"\n\s*\n\s*\n+", "\n\n", text) # Múltiples líneas vacías → máximo 2
+            text = re.sub(r"\n\s*\n\s*\n+", "\n\n", text)
             lines = text.split('\n')
             lines = [line.strip() for line in lines]
             text = '\n'.join(lines)
             text = re.sub(r'\n\s*\n+', '\n\n', text)
-            lines = [line for line in lines if line.strip()]  # Eliminar líneas vacías del medio también
+            lines = [line for line in lines if line.strip()]
             text = re.sub(r'[^\w\s\.\,\;\:\!\?\(\)\[\]\"\'\-\+\=\%\&\$\/\@\#\*]', '', text)
-            text = re.sub(r'["""]', '"', text)      # Comillas tipográficas → comillas normales
-            text = re.sub(r"[‘’]", "'", text)     # Apostrofes tipográficos → apostrofes normales
-            text = re.sub(r'-{2,}', '-', text)      # Múltiples guiones → un guión
-            text = re.sub(r'\s+([.!?;:])', r'\1', text)  # Eliminar espacios antes de puntuación
-            text = re.sub(r'([.!?;:])\s*', r'\1 ', text) # Un espacio después de puntuación
+            text = re.sub(r'["""]', '"', text)
+            text = re.sub(r"[‘’]", "'", text)
+            text = re.sub(r'-{2,}', '-', text)
+            text = re.sub(r'\s+([.!?;:])', r'\1', text)
+            text = re.sub(r'([.!?;:])\s*', r'\1 ', text)
             text = text.strip()
             if not text:
                 print(f"Advertencia: {self.filename} quedó vacío después del procesamiento")

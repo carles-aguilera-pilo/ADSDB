@@ -45,16 +45,15 @@ class ImageObj(ADataObj):
         self.image = self.image.resize((600, 400))
         
         brightness_enhancer = ImageEnhance.Brightness(self.image)
-        self.image = brightness_enhancer.enhance(1.1)  # +10% brillo
+        self.image = brightness_enhancer.enhance(1.1)
         
         contrast_enhancer = ImageEnhance.Contrast(self.image)
-        self.image = contrast_enhancer.enhance(1.15)  # +15% contraste
+        self.image = contrast_enhancer.enhance(1.15)
                 
         color_enhancer = ImageEnhance.Color(self.image)
-        self.image = color_enhancer.enhance(1.05)  # +5% saturación
-        self.image = self.image.filter(ImageFilter.GaussianBlur(radius=0.3))  # Suavizado ligero
+        self.image = color_enhancer.enhance(1.05)
+        self.image = self.image.filter(ImageFilter.GaussianBlur(radius=0.3))
         self.image = self.image.filter(ImageFilter.SHARPEN)
 
     def embed(self):
-        key = self.path_prefix + "/" + self.filename + self.extension
-        self.embeddings = embed_image(key).cpu().tolist()
+        self.embeddings = embed_image(self.image).cpu().tolist()

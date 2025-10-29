@@ -69,5 +69,4 @@ class AudioObj(ADataObj):
         self.audio = self.audio + 2
     
     def embed(self):
-        key = self.path_prefix + "/" + self.filename + self.extension
-        self.embeddings = embed_audio(key).cpu().tolist()
+        self.embeddings = embed_audio(self.audio).cpu().tolist()
