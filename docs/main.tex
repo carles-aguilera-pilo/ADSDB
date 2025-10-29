@@ -98,7 +98,29 @@ Vilella Jam \textsc{Oriol}\\
 
 \section{Instructions}
 
-README.md
+\subsection{Environment}
+The project requires the following environment variables to be defined:
+\begin{itemize}
+    \item ACCESS\_KEY\_ID
+    \item SECRET\_ACCESS\_KEY
+    \item S3\_API\_ENDPOINT
+    \item S3\_CONSOLE\_ENDPOINT
+    \item CHROMADB\_ENDPOINT
+    \item CHROMADB\_PORT
+    \item GEMINI\_API\_KEY
+\end{itemize}
+These should be provided in and env file. An example can be found in the repository in a file named \textit{env.example}.
+
+Gemini API Key can be obtained easily and free through Google AI Studio\footnote{https://aistudio.google.com/}.
+
+\subsection{Deployment}
+The project consists of two distinguished components: The pipeline and the app.
+
+The pipeline can be deployed using docker compose. To achieve it, execute the following command from the project's root directory:
+
+Once the pipeline has been deployed, the app can be deployed and will work correctly. To achieve it, execute the following command (also from the project's root directory):
+
+
 
 \newpage
 
@@ -130,6 +152,8 @@ This are the datasets used for our project:
     \item \href{https://huggingface.co/datasets/Moaaz55/skin_cancer_questions_answers}{Audio Data}: This is our third and last modality for this project, representing information as spoken language. In this dataset is a two-step process. We first get the content from a Hugging Face dataset containing questions and answers about skin cancer. Then, instead of using this data as text, we sample 100 of the answers from the dataset, we use a \textbf{text-to-speech} (TTS) engine to synthesize these text answers into audio. And finally we save this as individual .wav files. This creates a dataset of spoken explanations. This will allow our system to work with audio as a distinct modality. We -will generate embeddings out of this audio in order to perform similarity searches across modalities.
 \end{enumerate}
 
+All this data is collected automatically by a script. This script, although we consider it does not belong to the pipeline (since the pipeline officially starts once the data is uploaded ot the temporal landing zone), is executed at the beginning just before the Temporal Landing Zone. That is because we wanted to automate it. However, in a real case scenario we would configure datasources to send data directly to MinIO. 
+
 \section{Data Management Backbone}
 
 This section describes the project's data zones and the design decisions implemented for data handling and processing.
@@ -144,11 +168,11 @@ This layered architecture enables us to effectively track the data pipeline's ev
 
 \subsection{Landing Zone}
 
-This project layer, the \textbf{Landing Zone}, is divided into two distinct sub-zones: the Temporal Zone and the Persistent Zone.
+This project layer, the \textbf{Landing Zone}, is divided into two distinct sub-zones: the Temporal Landing Zone and the Persistent Landing Zone.
 
-The first, the \textbf{Temporal Zone}, serves as the initial data ingestion or staging area. All objects are loaded here in their raw, original format, without any transformation.
+The first, the \textbf{Temporal Landing Zone}, serves as the initial data ingestion or staging area. It acts as a data lake where all objects are uploaded in their raw original format, without any transformation.
 
-The secon, the \textbf{Persistent Zone}, is where we begin to structure and organize the data. In this phase, we classify objects based on their modality (images, text or audio) and store them in their corresponding locations.
+The second, the \textbf{Persistent Landing Zone}, is where we begin to structure and organize the data. In this phase, we classify objects based on their modality (images, text or audio) and store them in their corresponding locations.
 
 This initial organization ensures the data is correctly partitioned and prepared for subsequent processing stages.
 
@@ -175,15 +199,19 @@ In this layer, we organized the objects and elements to simplify subsequent mana
     \label{fig:persistent}
 \end{figure}
 
-\subsection{Formated Zone}
+\subsection{Formatted Zone}
+Until now tha data only has been classified according to its modality. In this layer, the data is preprocessed to ensure all elements are in a homogeneous format and a coherent structure. However, notice that the content is not altered: All the transformations are only format-wise.
 
-In this layer, the data is preprocessed to ensure all elements are in a homogeneous format and a coherent structure.
+Initially, we evaluated assigning a unique identifier (ID) to each object in order to facilitate traceability and searches. However, this option was discarded as the point of this project is to leverage the advantages of embeddings to retrieve similar elements.
 
-Initially, we evaluated assigning a unique identifier (ID) to each object in order to facilitate traceability. However, this option was discarded after analyzing its drawbacks. This approach could have introduced duplication or inconsistency issues between different datasets. Futhermore, regenerating IDs on each load might have caused the same element to receive different identifiers at different times, making it hard to track.
+In the end, for the scope of this project we have considered it is not needed to provide any metadata beyond the original filenames as the primary identifiers. So, in this zone we ensure format consistency between all of them, depending on their modality:
+\begin{itemize}
+    \item \textbf{Texts}: Normalized to \textbf{.txt}
+    \item \textbf{Images}: Normalized to \textbf{.png}
+    \item \textbf{Audios}: Normalized to \textbf{.mp3}
+\end{itemize}
 
-It was also determined that internal IDs offered no semantic meaning and could remove the context of the initial data.
-
-Ultimately, we opted to maintain the original filenames as the primary identifiers and ensure format consistency. All images were normalized to \textbf{.png}, texts to \textbf{.txt}, and audio to \textbf{.mp3}. These formats were chosen as the most suitable standards for each modality, simplifying future management and processing.
+These formats were chosen as the most suitable standards for each modality, due to being very well-known formats. However, these could be changed if it was needed.
 
 \begin{figure}[H]
     \centering
@@ -207,35 +235,69 @@ Ultimately, we opted to maintain the original filenames as the primary identifie
 \end{figure}
 
 \subsection{Trusted Zone}
+In this phase, we process all content (images, audio and text) to ensure it is clean, standardized, and ready for use in the last stage of the pipeline. Therefore, the trusted zone contains all the data after applying a sequence of generic transformations trying to prepare the data without adhering to the specific requirements of an specific model (that will be explained in the exploitation zone). 
 
-In this phase, we processed all content (images, audio and text) to ensure it was clean, standardized, and ready for use in the last stage of the pipeline.
+At the beginning, we realized an analysis to identify the format and status of the data within each of three modalities. This provided a general overview of the quality of the objects and characteristics, allowing us to proceed with a specific processing method for each data type.
 
-We began with an initial analysis to identify the format and status of the data within each of three modalities. This analysis provided a general overview of the quality of the objects and characteristics, allowing us to proceed with a specific processing method for each data type.
-
-The actions performed for each modality are detailed below.
+Since the number of actions performed for each modality is larger than in previous cases, they are detailed in the subsections below:
 
 \subsubsection{Image Processing}
+Images are extracted from the Formatted Zone, processed, and then stored in the Trusted Zone. The process applies different measures to enhance visual quality:
+\begin{itemize}
+    \item Resize to uniform 600x450 pixels shape to ensure consistency.
+    \item RGB Conversion for compatibility with further stages of the pipeline.
+    \item 10\% increase in brigthness for clearer images.
+    \item 15\% increase in contrast to highlight details.
+    \item 5\% increase in saturation to make colors more vibrant.
+    \item Light Gaussian blur to reduce digital noise. This softening was then compensated for withsharpening filter to restore detail and maintain image clarity.
+\end{itemize}
 
-Images were extracted from the Formatted Zone, processed, and then stored in the Trusted Zone. The process began by reading all image files, after which several treatments were applied to enhance visual quality.
-
-We first did a standardization process. All images were resized to a uniform 600 by 450 pixels to ensure consistency. They were also converted to the RGB color space for compatibility with further stages of the pipeline.
-
-Then, we also normalized the color. The brightness was increased by 10\% for clearer images, the contrast was enhanced by 15\% to highlight details and saturation was boosted by 5\% to make colors more vibrant.
-
-Finally, a light Gaussian blur was applied to reduce digial noise. This softening was then compensated for which a sharpening filter to restore detail and maintain image clarity.
+These are a set of transformations that we have considered suitable for improving the visual quality of these images for better use in the future. The values such as the percentages have been arbitrarily decided as an example.
 
 \subsubsection{Text Processing}
-
 Text is cleaned and normalized to ensure coherence, readability, and compatibility with subsequent storage
 
+\subsubsection{Audio Processing}
+\textbf{TODO}
+
 \section{Exploitation Zone}
+The exploitation zone is that zone from our pipeline where we actually process our data according to the requirements of an specific task. In our case, the primary objective of this zone is to take the different supported modalities of data (images, text and audio) and extract their embeddings in a \textbf{unified} space. The aim of this process is to allow us to perform multimodal similarity searches given the user input.
 
-The primary objective of this zone is to take different types of data (images, text and audio) and convert each one into a embedding in a \textbf{unified} space.
+\subsection{Embeddings extraction}
+To achieve it, it is mandatory for the embeddings of the different modalities to belong to the same embedding space. That means that all embeddings need to be generated by the same model.
 
-After evaluating each model, we selected the \href{https://github.com/facebookresearch/ImageBind}{ImageBind} model because it could embed all three data types into the same space and we will not require additional models to embed the data in the different spaces. For instance, if we used different models, we would had to embed text in more than one space (one for the similarity search across texts and another for the similarity searches across other modalities). We thought this could impact the performance of our pipeline and we did the processing with one single model to achieve everything.
+We started to investigate the use of multiple compatible models such as CLIP (for image and text) and Wav2CLIP (for audio to clip), which are different models whose embeddings spaces are compatible. However, after finding Meta's \href{https://github.com/facebookresearch/ImageBind}{ImageBind} model, we ended leaning on it since it alone can embed all three data types into the same space. Also, if we used different models, we would had to embed text in more than one space (one for the similarity search across texts and another for the similarity searches across other modalities). We thought this could impact the performance of our pipeline, so we decided to keep going on using a single model to achieve everything.
 
-In the official ImageBind documentation, the standard functions for generating embeddings require a path to a file. This limitation was not suitable for our application. That would mean that we download the object from the MinIO in a temporal folder, process it and then delete it. So, what we did is to observe and understand the internals of the model and based on that, we implemented our own solution to bypass this file-path limitation.
+In the official ImageBind documentation, the standard functions for generating embeddings require a path to a file. This limitation was not suitable for our application since that would mean that we should download each object from MinIO, store it into a temporal folder, process it and then delete it. To solve it, we observed and understood the internals of the functions provided by the model class in the public repository and, based on that, we implemented our own solution to bypass this file-path limitation.
 
-This custom implementations allowed us to generate embeddings directly from in-memory data, which is far more suitable for our pipeline. Then, we only had to pass each of the files from the Trusted Zone into our custom implementation and insert them into the \textbf{ChromaDB} for future modal searches.
+This custom implementations allowed us to generate embeddings directly from in-memory data, which is far more suitable for our pipeline. 
+
+\subsection{Vector database}
+After generating embeddings, we insert them into our vector database for future modality searches. We use a \textbf{ChromaDB} instance deployed as a separated docker container in the same way as MinIO. 
+
+The embeddings are stored into 3 separated collections, one for each modality. The reason why we have decided this is to logically separate it and facilitate the implementation of "similar modality seaches" (task 1). For multimodal searches we will have to query all the collections to retrieve all data from all supported types.
+
+\subsection{Particular case: Text transformation}
+After doing the first proof of concept, we notices ImageBind model has an input limit for texts of 100 tokens approximately. If the input length is greater, the generated embeddings will be the same and the user input will be at the same distance from all the other texts. To avoid this situation, it is needed to partition our texts into smaller fragments.
+
+After thinking about in which phase should we apply this transformation, we finally decided to apply it in the transition from the trusted zone to the exploitation zone. That is because this transformation is imposed by the specific requirements of our model. In other words, it is a very ad-hoc treatment (other models may not require it). We believe trusted zone should contain clean data in a generic way that is independent from the specific needs of models (analytical backbone). Therefore, we have ended applying it there, just before generating the embeddings.
+
+\section{Application development: Chatbot}
+The final part of our project is the development of a user interface chatbot-like that allows a user to perform any of the following 3 tasks:
+\begin{itemize}
+    \item Task 1. Similar modality search
+    \item Task 2. Multimodal similarity search
+    \item Task 3. RAG with external LLM
+\end{itemize}
+
+The user interface is based on Streamlit\footnote{https://streamlit.io/}, an open-source Python framework for delivering interactive Machine Learning and Data Science applications. 
+
+\subsection{Task 1. Similar modality search}
+\subsection{Task 2. Multimodal similarity search}
+\subsection{Task 3. RAG with external LLM}
+This task can be viewed as performing task 2 and then sending a query to an external LLM. At first, we tried to do a proof of concept by deploying LLaVA model locally, but we discarded it as we had some difficulties related with the size of the model. We opted for using Gemini API through the Python official SDK, as it is a well-known LLM and its free tier is enough for our needs and allows us to send multimodal queries involving images, texts and audios.
+
+Currently, task 3 only accepts text and one image as user input. After that, the application queries ChromaDB for the related texts and images, crafts and enhanced prompt, sends it to Gemini and shows the response through the user interface.
+
 
 \end{document}
