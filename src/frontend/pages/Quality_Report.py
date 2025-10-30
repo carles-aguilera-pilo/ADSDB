@@ -22,7 +22,6 @@ st.set_page_config(
 )
 load_dotenv()
 
-@st.cache_resource
 def get_minio_client():
     try:
         access_key_id = os.getenv("ACCESS_KEY_ID")
@@ -695,9 +694,9 @@ encoding problems, low-quality media, and inconsistencies that could affect down
 if get_minio_client() is None:
     st.stop()
 
-df_text = load_data(bucket="formatted-zone", prefix="text/", analysis_func=analisi_text, file_type="text")
+df_text = load_data(bucket="formatted-zone", prefix="texts/", analysis_func=analisi_text, file_type="text")
 df_image = load_data(bucket="formatted-zone", prefix="images/", analysis_func=analisi_imagen, file_type="image")
-df_audio = load_data(bucket="formatted-zone", prefix="audio/", analysis_func=analyze_audio_file, file_type="audio")
+df_audio = load_data(bucket="formatted-zone", prefix="audios/", analysis_func=analyze_audio_file, file_type="audio")
 
 tab_text, tab_image, tab_audio = st.tabs(["Text Quality", "Image Quality", "Audio Quality"])
 
