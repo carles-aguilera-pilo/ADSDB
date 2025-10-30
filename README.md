@@ -60,5 +60,5 @@ Also, to deploy only the data pipeline / application (assuming MinIO and ChromaD
 ```bash
 docker run --env-file=.env ghcr.io/carles-aguilera-pilo/adsdb:latest 
 ```
-Currently, the pipeline ([pipeline.py](./pipeline.py) code contains the data collection script to automatically be able to execute the project code easily from end to end.
+Currently, the pipeline ([pipeline.py](./pipeline.py)) code contains the data collection script to automatically be able to execute the project code easily from end to end.
 
