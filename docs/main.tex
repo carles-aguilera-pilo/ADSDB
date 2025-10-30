@@ -19,6 +19,8 @@
 \usepackage{hhline} % for double lines
 \usepackage{listings}
 \usepackage{hyperref}
+\pagestyle{plain}
+
 
 \captionsetup{justification=centering}
 
@@ -89,6 +91,8 @@ Vilella Jam \textsc{Oriol}\\
 \newpage
 
 \tableofcontents
+\thispagestyle{empty}
+
 
 \newpage
 
@@ -224,7 +228,7 @@ These formats were chosen as the most suitable standards for each modality, due 
     \centering
     \includegraphics[width=1\linewidth]{images/formatted-images.png}
     \caption{Image format unified}
-    \label{fig:placeholder}
+    \label{fig:image}
 \end{figure}
 
 \begin{figure}[H]
@@ -237,7 +241,8 @@ These formats were chosen as the most suitable standards for each modality, due 
 \subsection{Trusted Zone}
 In this phase, we process all content (images, audio and text) to ensure it is clean, standardized, and ready for use in the last stage of the pipeline. Therefore, the trusted zone contains all the data after applying a sequence of generic transformations trying to prepare the data without adhering to the specific requirements of an specific model (that will be explained in the exploitation zone). 
 
-At the beginning, we realized an analysis to identify the format and status of the data within each of three modalities. This provided a general overview of the quality of the objects and characteristics, allowing us to proceed with a specific processing method for each data type.
+At the beginning, we realized an analysis to identify the format and status of the data within each of three modalities. This provided a general overview of the quality of the objects and characteristics, allowing us to proceed with a specific processing method for each data type. In addition, a data analysis and preprocessing stage was carried out to examine their characteristics.
+The quality report for each element can be viewed in the repository, inside the notebooks folder located within the trusted-zone directory, or directly through the front-end in the “Quality Report” tab.
 
 Since the number of actions performed for each modality is larger than in previous cases, they are detailed in the subsections below:
 
@@ -255,10 +260,94 @@ Images are extracted from the Formatted Zone, processed, and then stored in the 
 These are a set of transformations that we have considered suitable for improving the visual quality of these images for better use in the future. The values such as the percentages have been arbitrarily decided as an example.
 
 \subsubsection{Text Processing}
-Text is cleaned and normalized to ensure coherence, readability, and compatibility with subsequent storage
+The text preprocessing stage aims to clean, normalize, and standardize all text files before their integration into the analysis pipeline.
+This phase ensures that textual content is coherent, readable, and noise-free, facilitating its subsequent indexing and embedding generation.
+
+The main operations performed are as follows:
+
+\begin{itemize}
+    \item Unicode normalization (NFKD) to unify special characters, accents, and non-standard symbols.
+\end{itemize}
+
+\begin{itemize}
+    \item Removal of control and non-printable characters, preserving only relevant line breaks and tabulations.
+\end{itemize}
+
+\begin{itemize}
+    \item Reduction of multiple white spaces, converting sequences of spaces or tabs into a single space.
+\end{itemize}
+
+\begin{itemize}
+    \item Simplification of line breaks, limiting empty lines to a maximum of two consecutive ones.
+\end{itemize}
+
+\begin{itemize}
+    \item Trimming of leading and trailing spaces on each line to maintain a clean and uniform structure.
+\end{itemize}
+
+\begin{itemize}
+    \item Removal of unnecessary empty lines, both at the beginning and end of the text.
+\end{itemize}
+
+\begin{itemize}
+    \item Cleaning of problematic special characters, keeping only standard punctuation and alphanumeric symbols.
+\end{itemize}
+
+\begin{itemize}
+    \item Normalization of quotation marks and apostrophes, converting typographic versions into straight quotes (" and ').
+\end{itemize}
+
+\begin{itemize}
+    \item Unification of multiple hyphens, reducing sequences of -- or more into a single hyphen (-).
+\end{itemize}
+
+\begin{itemize}
+    \item Normalization of spacing around punctuation, removing unnecessary spaces before punctuation marks and ensuring a single space after them.
+\end{itemize}
+
+\begin{itemize}
+    \item Final trimming of leading and trailing spaces in the entire text.
+\end{itemize}
+
+\begin{itemize}
+    \item Content verification to ensure that the resulting file is not empty after processing.
+\end{itemize}
+
+Finally, the cleaned text is saved in UTF-8 format and uploaded to the trusted-zone bucket in MinIO, preserving the original structure under the text/ prefix.
+
+This process guarantees that all text files present a consistent structure, free from residual characters and inconsistencies, and are ready for semantic processing and multimodal similarity search.
 
 \subsubsection{Audio Processing}
-\textbf{TODO}
+The audio preprocessing stage aims to ensure the technical consistency and quality of all audio files before their integration into the analysis pipeline.
+This phase applies a series of transformations to clean, normalize, and standardize the audio data, ensuring compatibility with multimodal processing models.
+
+The main operations performed are as follows:
+
+\begin{itemize}
+    \item Sampling rate normalization to 48 kHz to unify all audio files.
+\end{itemize}
+
+\begin{itemize}
+    \item Automatic silence removal at the beginning and end, detecting silent segments longer than 500 ms below –50 dB.
+\end{itemize}
+
+\begin{itemize}
+    \item Volume normalization and dynamic range compression (threshold –20 dB, ratio 4:1, attack 5 ms, release 50 ms) to balance loudness levels.
+\end{itemize}
+
+\begin{itemize}
+    \item Noise filtering using a high-pass filter at 80 Hz and a low-pass filter at 16 kHz to remove undesired low- and high-frequency components.
+\end{itemize}
+
+\begin{itemize}
+    \item Final gain adjustment with a +2 dB amplification to enhance presence and clarity.
+\end{itemize}
+
+
+    Final export in MP3 format (192 kbps) and upload to the trusted-zone bucket in MinIO for further indexing and analysis.
+
+
+This process ensures that all audio files share a homogeneous format, clean sound, and optimal quality for embedding extraction and multimodal similarity search.
 
 \section{Exploitation Zone}
 The exploitation zone is that zone from our pipeline where we actually process our data according to the requirements of an specific task. In our case, the primary objective of this zone is to take the different supported modalities of data (images, text and audio) and extract their embeddings in a \textbf{unified} space. The aim of this process is to allow us to perform multimodal similarity searches given the user input.
@@ -293,7 +382,36 @@ The final part of our project is the development of a user interface chatbot-lik
 The user interface is based on Streamlit\footnote{https://streamlit.io/}, an open-source Python framework for delivering interactive Machine Learning and Data Science applications. 
 
 \subsection{Task 1. Similar modality search}
+This modality corresponds to Task 1, and its purpose is to, given a specific input object, return the most similar elements to the one provided.
+For example, if an image of skin cancer or melanoma is given, the system will return the images that are most similar to the one provided as input.
+
+The same process applies to other types of data, such as texts or audio. By providing a specific input through the prompt in the front-end, the task retrieves and returns the most similar elements of the same type (image, text, or audio).
+
+The process works as follows:
+when an object arrives from the front-end, it is processed through the pipeline without being uploaded to MinIO first. The goal is to obtain an object with the same format as those already stored in MinIO, from which embeddings have been generated.
+This new element is transformed so that, when its embedding is created, it is as representative and realistic as possible. This allows us to compare it with the embeddings already stored in ChromaDB and identify which items in the database are the most similar.
+
+This procedure is applied to all types of elements, and the front-end allows users to select the desired modality, audio, text, or image.
+
+Finally, a K value is included to specify the number of output results to be returned, for example, 1, 2, 10, or any number required.
 \subsection{Task 2. Multimodal similarity search}
+In this second task, we implemented the multimodal similarity search.
+
+The main objective of this task is to enable the system, given a specific query, to provide a richer and more comprehensive response by combining different types of data.
+Although it does not reach the level of reasoning and generation achieved in Task 3, this stage already allows, from a single input, the retrieval of information across multiple modalities (text, image, and audio).
+
+For example, when providing the text “What is skin cancer”, the system returns both the most similar texts related to skin cancer and the most relevant images associated with it. This behavior can be extended to any combination of input and output modalities, text, image, or audio.
+
+The most significant challenge of this task was ensuring that all object types (images, texts, and audio) had embeddings projected into a shared multidimensional space.
+This allows an input text to be compared not only with textual embeddings but also with image and audio embeddings, by computing the minimum distance within this common space and retrieving the most similar elements based on semantic proximity.
+
+Initially, handling images and texts posed no major issues, as we used the CLIP library together with ChromaDB to generate embeddings and perform similarity comparisons.
+However, the main difficulty arose when integrating audio data, since CLIP does not natively support audio embeddings. To address this, we explored several alternatives that could generate audio embeddings within the same latent space as CLIP’s text and image embeddings.
+
+Among the solutions tested were Wav2CLIP and LAION-CLAP, but the results were unsatisfactory: many implementations were deprecated, unstable, or incompatible with CLIP’s multidimensional space.
+Due to these limitations, we ultimately decided to migrate to Meta’s ImageBind library, which allows generating text, image, and audio embeddings within a unified multimodal space.
+We installed Meta’s official ImageBind repository and integrated it into our processing pipeline, successfully achieving a shared embedding space for all object types, enabling an effective multimodal similarity search system.
+
 \subsection{Task 3. RAG with external LLM}
 This task can be viewed as performing task 2 and then sending a query to an external LLM. At first, we tried to do a proof of concept by deploying LLaVA model locally, but we discarded it as we had some difficulties related with the size of the model. We opted for using Gemini API through the Python official SDK, as it is a well-known LLM and its free tier is enough for our needs and allows us to send multimodal queries involving images, texts and audios. Some of the avantages of using Gemini are the easy integration for quick tests and not having to have the infraestructure to deploy the model. Nevertheless, some of the drawbacks are the economic cost (it it were deployed in a real case scenario, the free tier would very likely not be enough), loose of privacy and the loss of control on the model training (since it is deployed on Google's infraestructure).
 
