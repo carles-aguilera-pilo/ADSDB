@@ -35,7 +35,11 @@ To deploy MinIO with Docker Compose it is needed to:
 2. Populate the .env file with the MinIO root credentials and its API endpoint:
     - **ACCESS_KEY_ID**=*root-user*    
     - **SECRET_ACCESS_KEY**=*root-user-password* 
-    - **S3_API_ENDPOINT**=*127.0.0.1:9000*
+    - **S3_API_ENDPOINT**=*minio:9000*
+    - **S3_CONSOLE_ENDPOINT**=*minio:9001*
+    - **CHROMADB_ENDPOINT**=chromadb
+    - **CHROMADB_PORT**=8000
+    - **GEMINI_API_KEY**=*gemini-api-key*
 
     You can view an example of .env file [here](./env.example).
 3. Run the following command from the same directory where the docker-compose.yaml file is located:
