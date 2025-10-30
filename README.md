@@ -1,6 +1,12 @@
 # ADSDB
 Project for the course *Algorithms, Data Structures and Databases* (ADSDB) of the Master's Degree in Data Science (MDS) taught at UPC.
 
+## File structure
+This project contains the following folders:
+- **docs**: Latex documents for project report.
+- **notebooks**: Notebooks containing proof-of-concepts related to the development of the data pipeline.
+- **src**: Data pipeline and application code.
+
 ## Dependencies
 Before we fix it up, this project requires some dependencies to have been installed
 
@@ -46,10 +52,13 @@ For this project, we have designed an script that automatically collects data fo
 It is needed to have the data as presented before starting the data pipeline. The first step of the pipeline consists on traversing all the files and uploading them to the temporal landing zone (see the [notebook](./notebooks/landing_zone/temporal_zone.ipynb) for more information).
 
 ## Run Data pipeline
-After setting up MinIO and having collected all the data for our pipeline, run the data pipeline to upload it to MinIO and process it for further exploitation. The scripts involved in the process, which are based on the notebooks' code, can be found in [src](./src/) folder.
-
-The data pipeline process can be run as a docker container:
+The intended way to execute this project is using Docker containers. The stack (MinIO + ChromaDB + Application code) can be deployed using docker compose by executing:
 ```bash
-docker run -v ./output:/usr/local/app/output --env-file=.env ghcr.io/carles-aguilera-pilo/adsdb:latest
+docker compose up -d
 ```
+Also, to deploy only the data pipeline / application (assuming MinIO and ChromaDB are already running):
+```bash
+docker run --env-file=.env ghcr.io/carles-aguilera-pilo/adsdb:latest 
+```
+Currently, the pipeline ([pipeline.py](./pipeline.py)) code contains the data collection script to automatically be able to execute the project code easily from end to end.
 
