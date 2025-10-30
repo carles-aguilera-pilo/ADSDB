@@ -61,11 +61,16 @@ for msg in st.session_state.messages:
     display_chat_message(msg)
 
 st.header("Speak to Chat")
-st.info("Click to record, stop to send. Your audio will be transcribed and used as a prompt.")
-
+st.info("Click to record, stop to send. You can also upload an image *before* stopping the recording.")
 audio_segment = audiorecorder(
     show_visualizer=True,
     key="audiorecorder"
+)
+
+audio_image_file = st.file_uploader(
+    "Upload an image to send with your audio (optional)", 
+    type=["png", "jpg", "jpeg"],
+    key="audio_image_uploader"
 )
 
 buffer = io.BytesIO()
@@ -79,19 +84,28 @@ if (
 ):
     st.session_state.last_processed_audio = buffer.getvalue()
     audio_bytes = buffer.getvalue()
-    st.session_state.messages.append({
-        "role": "user", 
-        "audio": audio_bytes
-    })
+    user_image_bytes = None
+    if audio_image_file is not None:
+        user_image_bytes = audio_image_file.read()
+    user_message = {"role": "user", "audio": audio_bytes}
+    if user_image_bytes:
+        user_message["image"] = user_image_bytes
+        
+    st.session_state.messages.append(user_message)
     with st.spinner("Transcribing audio and thinking..."):
         transcribed_text = getTextFromAudio(audio_bytes)
         st.session_state.messages.append({
             "role": "user", 
-            "content": f"*(Audio transcribed: {transcribed_text})*"
+            "content": f"*(Text embedded: {transcribed_text})*"
         })
-        response = rag(user_text=transcribed_text, user_image="")
+        response = rag(user_text=transcribed_text, user_image=user_image_bytes)
         
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        try:
+            useful_content = "".join(part.text for part in response.candidates[0].content.parts)
+        except (AttributeError, IndexError, TypeError):
+            useful_content = "Error: Could not parse the response."
+            
+        st.session_state.messages.append({"role": "assistant", "content": useful_content})
         st.rerun()
 
 st.header("Type and/or Upload")
