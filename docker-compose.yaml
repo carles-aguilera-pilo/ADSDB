@@ -21,7 +21,7 @@ services:
     volumes:
       - chroma-data:/chroma # Persist ChromaDB data
   app:
-    image: ghcr.io/carles-aguilera-pilo/adsdb:1.1
+    image: ghcr.io/carles-aguilera-pilo/adsdb:1.2
     network_mode: "host"
     ports:
       - "8501:8501"
