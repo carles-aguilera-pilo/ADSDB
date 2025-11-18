@@ -56,4 +56,4 @@ class ImageObj(ADataObj):
         self.image = self.image.filter(ImageFilter.SHARPEN)
 
     def embed(self):
-        self.embeddings = embed_image(self.image).cpu().tolist()
+        self.embeddings = embed_image(self.image)

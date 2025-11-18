@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from src.minio_connection import MinIOConnection
 from src.dataobj.ImageObj import ImageObj
-from src.dataobj.AudioObj import AudioObj
 from src.dataobj.TextObj import TextObj
 from tqdm import tqdm
 

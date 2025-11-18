@@ -69,7 +69,7 @@ class TextObj(ADataObj):
             parts = self.partition_text(text)
             self.texts = parts
             for _, part in enumerate(parts):
-                embedding = embed_text(part).cpu().squeeze().tolist()
+                embedding = embed_text(part)
                 self.embeddings.append(embedding)
 
     def partition_text(self, text):
