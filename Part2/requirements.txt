@@ -38,3 +38,4 @@ wav2clip
 seaborn
 st-pages==1.0.1
 torchcodec==0.8.1
+bert-score==0.3.13
