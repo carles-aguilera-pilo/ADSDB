@@ -1,0 +1,35 @@
+{
+    "metadata": {
+        "model_name": "openai/clip-vit-large-patch14",
+        "device_used": "cuda",
+        "hyperparameters": {
+            "batch_size": 8,
+            "learning_rate": 5e-06,
+            "epochs": 3
+        }
+    },
+    "metrics": {
+        "Recall@1": 0.15903614457831325,
+        "Recall@5": 0.5036144578313253,
+        "Recall@10": 0.653012048192771,
+        "Mean Rank": 10.026506024096385,
+        "Median Rank": 5.0,
+        "MRR": 0.3208132351130705,
+        "NDCG": 0.46559744979785117,
+        "Sensitivity": 0.3849298997210845,
+        "Specificity": 0.8328873753800096,
+        "F1 Score": 0.34356208965893487,
+        "BertScore Precision": 0.8850935101509094,
+        "BertScore Recall": 0.8794289231300354,
+        "BERTScore F1": 0.8820855021476746,
+        "Trainable Parameters": 427616513,
+        "Total Parameters": 427616513,
+        "Inference Latency (ms)": 2109.8761320114136,
+        "Peak VRAM Usage (GB)": 9.151876449584961
+    },
+    "loss_history": [
+        1.6648717774794652,
+        0.7267011809520997,
+        0.41516245514727557
+    ]
+}

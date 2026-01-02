@@ -31,7 +31,7 @@ class DataCollection():
                 data = data.replace('[' + str(j) + ']', '')
 
 
-            fd = open(cls.OUTPUT_DIR + "texts/" + topic + '.txt', 'w')
+            fd = open(cls.OUTPUT_DIR + "texts/" + topic + '.txt', 'w', encoding='utf-8')
             fd.write(data)
             fd.close()
 
