@@ -28,7 +28,7 @@ def main():
 
     elif cmd == "pipeline":
         os.environ["PYTHONPATH"] = '.'
-        subprocess.run(["python3", "src/pipeline.py"])
+        subprocess.run(["python3", "pipeline.py"])
         
     else:
         print(f"Unknown command: {cmd}")
