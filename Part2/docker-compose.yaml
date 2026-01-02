@@ -18,24 +18,25 @@ services:
       - "8000:8000"
     volumes:
       - chroma-data:/chroma # Persist ChromaDB data
-  #app:
-  #  image: ghcr.io/carles-aguilera-pilo/adsdb:1.2
-  #  network_mode: "host"
-  #  ports:
-  #    - "8501:8501"
-  #  env_file:
-  #    - .env
-  #  environment:
-  #    ACCESS_KEY_ID: ${ACCESS_KEY_ID}
-  #    SECRET_ACCESS_KEY: ${SECRET_ACCESS_KEY}
-  #    S3_API_ENDPOINT: ${S3_API_ENDPOINT}
-  #    S3_CONSOLE_ENDPOINT: ${S3_CONSOLE_ENDPOINT}
-  #    CHROMADB_ENDPOINT: ${CHROMADB_ENDPOINT}
-  #    CHROMADB_PORT: ${CHROMADB_PORT}
-  #    GEMINI_API_KEY: ${GEMINI_API_KEY}
-  #  depends_on:
-  #    - minio
-  #    - chromadb
+  # app:
+  #   image: ghcr.io/carles-aguilera-pilo/adsdb:latest
+  #   command: "pipeline" 
+  #   network_mode: "host"
+  #   ports:
+  #     - "8501:8501"
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     ACCESS_KEY_ID: ${ACCESS_KEY_ID}
+  #     SECRET_ACCESS_KEY: ${SECRET_ACCESS_KEY}
+  #     S3_API_ENDPOINT: ${S3_API_ENDPOINT}
+  #     S3_CONSOLE_ENDPOINT: ${S3_CONSOLE_ENDPOINT}
+  #     CHROMADB_ENDPOINT: ${CHROMADB_ENDPOINT}
+  #     CHROMADB_PORT: ${CHROMADB_PORT}
+  #     GEMINI_API_KEY: ${GEMINI_API_KEY}
+  #   depends_on:
+  #     - minio
+  #     - chromadb
 
 volumes:
   chroma-data:
